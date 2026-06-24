@@ -34,5 +34,21 @@ export default defineRouter((/* { store, ssrContext } */) => {
     history: createHistory(import.meta.env.QUASAR_VUE_ROUTER_BASE),
   })
 
+  // ===== GUARD: protege las rutas que requieren login =====
+  Router.beforeEach((to, from, next) => {
+    const token = localStorage.getItem('token')
+    const necesitaLogin = to.matched.some((r) => r.meta.requiereAuth)
+
+    if (necesitaLogin && !token) {
+      // Quiere entrar a algo protegido pero NO está logueado → al login
+      next('/login')
+    } else if ((to.path === '/login' || to.path === '/registro') && token) {
+      // Si ya está logueado y trata de ir al login/registro → al inicio
+      next('/')
+    } else {
+      next()
+    }
+  })
+
   return Router
 })
