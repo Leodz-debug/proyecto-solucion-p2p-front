@@ -70,8 +70,7 @@
 
           <div class="text-center q-mt-md text-grey-5">
             ¿No tienes cuenta?
-            <span class="text-amber cursor-pointer">Crear cuenta</span>
-          </div>
+            <span class="text-amber cursor-pointer" @click="$router.push('/registro')">Crear cuenta</span>          </div>
         </q-card>
       </div>
 
@@ -124,6 +123,14 @@ async function ingresar() {
   background: #161b22;
   border: 1px solid #30363d;
   border-radius: 12px;
+}
+/* Evita que el autocompletar del navegador pinte los campos de blanco */
+:deep(input:-webkit-autofill),
+:deep(input:-webkit-autofill:hover),
+:deep(input:-webkit-autofill:focus) {
+  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0 1000px #161b22 inset !important;
+  caret-color: white;
 }
 .branding {
   border-right: 1px solid #21262d;
