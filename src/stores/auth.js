@@ -22,7 +22,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('usuario', JSON.stringify(res.data.usuario))
     },
 
-        async registrar(datos) {
+    async registrar(datos) {
       // datos = { nombreCompleto, correo, password, telefono }
       await api.post('/usuario/registrar', datos)
       // Después de registrar, inicia sesión automáticamente

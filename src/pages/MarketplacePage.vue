@@ -9,29 +9,57 @@
         <!-- Tipo -->
         <div class="col-12 col-md-3">
           <div class="text-grey-5 text-caption q-mb-xs">Tipo</div>
-          <q-select v-model="filtroTipo" :options="['Todas', 'Venta', 'Compra']"
-            dark outlined dense color="amber" />
+          <q-select
+            v-model="filtroTipo"
+            :options="['Todas', 'Venta', 'Compra']"
+            dark
+            outlined
+            dense
+            color="amber"
+          />
         </div>
 
         <!-- Moneda origen -->
         <div class="col-12 col-md-3">
           <div class="text-grey-5 text-caption q-mb-xs">Moneda origen</div>
-          <q-select v-model="filtroOrigen" :options="opcionesMoneda"
-            emit-value map-options dark outlined dense color="amber" />
+          <q-select
+            v-model="filtroOrigen"
+            :options="opcionesMoneda"
+            emit-value
+            map-options
+            dark
+            outlined
+            dense
+            color="amber"
+          />
         </div>
 
         <!-- Moneda destino -->
         <div class="col-12 col-md-3">
           <div class="text-grey-5 text-caption q-mb-xs">Moneda destino</div>
-          <q-select v-model="filtroDestino" :options="opcionesMoneda"
-            emit-value map-options dark outlined dense color="amber" />
+          <q-select
+            v-model="filtroDestino"
+            :options="opcionesMoneda"
+            emit-value
+            map-options
+            dark
+            outlined
+            dense
+            color="amber"
+          />
         </div>
 
         <!-- Ordenar -->
         <div class="col-12 col-md-3">
           <div class="text-grey-5 text-caption q-mb-xs">Ordenar por</div>
-          <q-select v-model="ordenarPor" :options="['Mejor tasa', 'Tasa más alta', 'Más reciente']"
-            dark outlined dense color="amber" />
+          <q-select
+            v-model="ordenarPor"
+            :options="['Mejor tasa', 'Tasa más alta', 'Más reciente']"
+            dark
+            outlined
+            dense
+            color="amber"
+          />
         </div>
       </div>
 
@@ -41,9 +69,7 @@
     </q-card>
 
     <!-- Contador -->
-    <div class="text-grey-5 q-mb-md">
-      {{ ofertasFiltradas.length }} oferta(s) encontrada(s)
-    </div>
+    <div class="text-grey-5 q-mb-md">{{ ofertasFiltradas.length }} oferta(s) encontrada(s)</div>
 
     <!-- Cargando -->
     <div v-if="cargando" class="text-center q-pa-xl">
@@ -65,10 +91,15 @@
             <q-avatar color="amber" text-color="black" size="38px">V</q-avatar>
             <div class="q-ml-sm">
               <div class="text-white text-weight-bold">Vendedor #{{ oferta.usuarioId }}</div>
-              <div class="text-amber text-caption"><q-icon name="star" size="14px" /> Reputación</div>
+              <div class="text-amber text-caption">
+                <q-icon name="star" size="14px" /> Reputación
+              </div>
             </div>
             <q-space />
-            <q-badge :color="oferta.tipoOperacion === 'Venta' ? 'green-9' : 'blue-9'" class="q-pa-sm">
+            <q-badge
+              :color="oferta.tipoOperacion === 'Venta' ? 'green-9' : 'blue-9'"
+              class="q-pa-sm"
+            >
               {{ oferta.tipoOperacion }}
             </q-badge>
           </div>
@@ -79,17 +110,24 @@
           </div>
 
           <div class="row justify-between text-grey-4 q-mb-xs">
-            <span>Disponible:</span><span class="text-white">{{ oferta.montoDisponible ?? '—' }}</span>
+            <span>Disponible:</span
+            ><span class="text-white">{{ oferta.montoDisponible ?? '—' }}</span>
           </div>
           <div class="row justify-between text-grey-4 q-mb-xs">
-            <span>Límites:</span><span class="text-white">{{ oferta.montoMinimo }} - {{ oferta.montoMaximo }}</span>
+            <span>Límites:</span
+            ><span class="text-white">{{ oferta.montoMinimo }} - {{ oferta.montoMaximo }}</span>
           </div>
           <div class="row justify-between text-grey-4 q-mb-md">
             <span>Estado:</span><span class="text-white">{{ oferta.estado }}</span>
           </div>
 
-          <q-btn label="Iniciar trato" color="amber" text-color="black"
-            class="full-width text-weight-bold" @click="iniciarTrato(oferta)" />
+          <q-btn
+            label="Iniciar trato"
+            color="amber"
+            text-color="black"
+            class="full-width text-weight-bold"
+            @click="iniciarTrato(oferta)"
+          />
         </q-card>
       </div>
     </div>
@@ -119,10 +157,7 @@ const opcionesMoneda = computed(() => [
 async function cargarDatos() {
   cargando.value = true
   try {
-    const [resOfertas, resMonedas] = await Promise.all([
-      api.get('/oferta'),
-      api.get('/moneda'),
-    ])
+    const [resOfertas, resMonedas] = await Promise.all([api.get('/oferta'), api.get('/moneda')])
     ofertas.value = resOfertas.data
     monedas.value = resMonedas.data
   } catch (e) {
@@ -171,9 +206,27 @@ onMounted(cargarDatos)
 </script>
 
 <style scoped>
-.market-page { background: #0d1117; min-height: 100vh; }
-.panel { background: #161b22; border: 1px solid #30363d; border-radius: 12px; }
-.oferta-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; transition: border 0.2s; }
-.oferta-card:hover { border: 1px solid #f2c037; }
-.tasa-box { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; }
+.market-page {
+  background: #0d1117;
+  min-height: 100vh;
+}
+.panel {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+}
+.oferta-card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  transition: border 0.2s;
+}
+.oferta-card:hover {
+  border: 1px solid #f2c037;
+}
+.tasa-box {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+}
 </style>

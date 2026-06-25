@@ -7,11 +7,26 @@
         <div class="text-grey-5">Únete a miles de usuarios que ya intercambian divisas</div>
       </div>
 
-      <q-input v-model="nombreCompleto" label="Nombre completo" dark outlined color="amber" class="q-mb-md">
+      <q-input
+        v-model="nombreCompleto"
+        label="Nombre completo"
+        dark
+        outlined
+        color="amber"
+        class="q-mb-md"
+      >
         <template v-slot:prepend><q-icon name="person" /></template>
       </q-input>
 
-      <q-input v-model="correo" label="Correo electrónico" type="email" dark outlined color="amber" class="q-mb-md">
+      <q-input
+        v-model="correo"
+        label="Correo electrónico"
+        type="email"
+        dark
+        outlined
+        color="amber"
+        class="q-mb-md"
+      >
         <template v-slot:prepend><q-icon name="mail" /></template>
       </q-input>
 
@@ -19,7 +34,15 @@
         <template v-slot:prepend><q-icon name="phone" /></template>
       </q-input>
 
-      <q-input v-model="password" label="Contraseña" type="password" dark outlined color="amber" class="q-mb-md">
+      <q-input
+        v-model="password"
+        label="Contraseña"
+        type="password"
+        dark
+        outlined
+        color="amber"
+        class="q-mb-md"
+      >
         <template v-slot:prepend><q-icon name="lock" /></template>
       </q-input>
 
@@ -38,7 +61,9 @@
 
       <div class="text-center q-mt-md text-grey-5">
         ¿Ya tienes cuenta?
-        <span class="text-amber cursor-pointer" @click="$router.push('/login')">Iniciar sesión</span>
+        <span class="text-amber cursor-pointer" @click="$router.push('/login')"
+          >Iniciar sesión</span
+        >
       </div>
     </q-card>
   </q-page>
@@ -69,12 +94,12 @@ async function crear() {
       password: password.value,
       telefono: telefono.value,
     })
-    
+
     // Forzar login manual limpiando tokens automáticos del backend
     localStorage.removeItem('token')
     if (auth.logout) auth.logout()
 
-    router.push('/login') 
+    router.push('/login')
   } catch (e) {
     if (e.response?.status === 400) {
       error.value = 'El correo ya está registrado.'
@@ -88,8 +113,16 @@ async function crear() {
 </script>
 
 <style scoped>
-.register-page { background: #0d1117; min-height: 100vh; }
-.register-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; width: 420px; }
+.register-page {
+  background: #0d1117;
+  min-height: 100vh;
+}
+.register-card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  width: 420px;
+}
 :deep(input:-webkit-autofill) {
   -webkit-text-fill-color: white !important;
   -webkit-box-shadow: 0 0 0 1000px #161b22 inset !important;

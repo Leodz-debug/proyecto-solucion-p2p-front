@@ -1,7 +1,14 @@
 <template>
   <q-page class="oper-page q-pa-lg">
-    <q-btn flat no-caps color="amber" icon="arrow_back" label="Volver al marketplace"
-      class="q-mb-md q-px-none" @click="$router.push('/marketplace')" />
+    <q-btn
+      flat
+      no-caps
+      color="amber"
+      icon="arrow_back"
+      label="Volver al marketplace"
+      class="q-mb-md q-px-none"
+      @click="$router.push('/marketplace')"
+    />
 
     <div class="text-h5 text-weight-bold text-white q-mb-lg">Operaciones Activas</div>
 
@@ -24,6 +31,69 @@
           <div class="row justify-between text-grey-4">
             <span>ID Comprador:</span><span class="text-white">{{ op.compradorId }}</span>
           </div>
+          <div class="row q-col-gutter-sm q-mt-md">
+            <div class="row q-col-gutter-sm q-mt-md">
+              <div class="col-6">
+                <q-btn
+                  class="full-width"
+                  color="amber"
+                  text-color="black"
+                  label="Comprobante"
+                  @click="$router.push('/comprobante?operacion=' + op.id)"
+                />
+              </div>
+
+              <div class="col-6">
+                <q-btn
+                  class="full-width"
+                  color="green"
+                  label="Calificar"
+                  @click="$router.push('/calificacion?operacion=' + op.id)"
+                />
+              </div>
+
+              <div class="col-6">
+                <q-btn
+                  class="full-width"
+                  color="red"
+                  label="Disputa"
+                  @click="$router.push('/disputa?operacion=' + op.id)"
+                />
+              </div>
+
+              <div class="col-6">
+                <q-btn
+                  class="full-width"
+                  color="blue"
+                  label="Chat"
+                  @click="$router.push('/chat?operacion=' + op.id)"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="row justify-between text-grey-4">
+            <span>Vendedor:</span>
+
+            <span class="text-white">
+              {{ op.vendedorNombre }}
+            </span>
+          </div>
+
+          <div class="row justify-between text-grey-4">
+            <span>Comprador:</span>
+
+            <span class="text-white">
+              {{ op.compradorNombre }}
+            </span>
+          </div>
+
+          <div class="row justify-between text-grey-4">
+            <span>Código:</span>
+
+            <span class="text-white">
+              {{ op.codigoOperacion }}
+            </span>
+          </div>
         </q-card>
       </div>
     </div>
@@ -44,14 +114,13 @@ async function cargarOperaciones() {
   try {
     // Llamamos al endpoint general
     const res = await api.get('/operacion')
-    
-    // Filtramos los datos. 
-    // NOTA: Si en consola ves que las propiedades tienen mayúsculas (ej: CompradorId), 
+
+    // Filtramos los datos.
+    // NOTA: Si en consola ves que las propiedades tienen mayúsculas (ej: CompradorId),
     // cambia 'op.compradorId' por 'op.CompradorId' aquí abajo.
     if (res.data && Array.isArray(res.data)) {
-      operaciones.value = res.data.filter(op => 
-        op.compradorId === auth.usuario.id || 
-        op.vendedorId === auth.usuario.id
+      operaciones.value = res.data.filter(
+        (op) => op.compradorId === auth.usuario.id || op.vendedorId === auth.usuario.id,
       )
     }
   } catch (error) {
@@ -65,6 +134,13 @@ onMounted(cargarOperaciones)
 </script>
 
 <style scoped>
-.oper-page { background: #0d1117; min-height: 100vh; }
-.panel { background: #161b22; border: 1px solid #30363d; border-radius: 12px; }
+.oper-page {
+  background: #0d1117;
+  min-height: 100vh;
+}
+.panel {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+}
 </style>

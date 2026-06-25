@@ -1,7 +1,6 @@
 <template>
   <q-page class="login-page flex flex-center">
     <div class="login-container row items-center justify-center">
-
       <div class="col-12 col-md-6 text-center q-pa-xl branding">
         <q-icon name="shield" size="64px" color="amber" />
         <div class="text-h4 text-weight-bold q-mt-md text-white">
@@ -27,7 +26,8 @@
             v-model="correo"
             label="Correo electrónico"
             type="email"
-            dark outlined
+            dark
+            outlined
             color="amber"
             class="q-mb-md"
           >
@@ -38,7 +38,8 @@
             v-model="password"
             label="Contraseña"
             :type="verPass ? 'text' : 'password'"
-            dark outlined
+            dark
+            outlined
             color="amber"
             class="q-mb-md"
             @keyup.enter="ingresar"
@@ -72,7 +73,6 @@
           </div>
         </q-card>
       </div>
-
     </div>
   </q-page>
 </template>
@@ -81,7 +81,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 // Cambiado alias por ruta relativa por si Vite reclama la @
-import { useAuthStore } from '../stores/auth' 
+import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -98,7 +98,7 @@ async function ingresar() {
   try {
     await auth.login(correo.value, password.value)
     // CAMBIO CLAVE: Te manda directo a verificación tras iniciar sesión con éxito
-    router.push('/verificacion') 
+    router.push('/verificacion')
   } catch (e) {
     if (e.response?.status === 401) {
       error.value = 'Correo o contraseña incorrectos.'

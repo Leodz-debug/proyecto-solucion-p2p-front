@@ -2,9 +2,11 @@
   <q-layout view="lHh Lpr lFf" class="bg-dark-custom">
     <q-header elevated class="bg-header q-px-md">
       <q-toolbar class="row justify-between items-center q-py-xs">
-
         <!-- Logo Izquierda -->
-        <div class="row items-center q-gutter-xs cursor-pointer" @click="$router.push('/seleccion')">
+        <div
+          class="row items-center q-gutter-xs cursor-pointer"
+          @click="$router.push('/seleccion')"
+        >
           <q-icon name="shield" size="28px" color="amber" />
           <span class="text-h6 text-weight-bold text-white">
             CambioSeguro <span class="text-amber">P2P</span>
@@ -12,9 +14,34 @@
         </div>
 
         <div class="row items-center q-gutter-md gt-xs">
-          <q-btn flat no-caps label="Inicio" class="text-grey-4" @click="$router.push('/seleccion')" />
-          <q-btn flat no-caps label="Marketplace" class="text-grey-4" @click="$router.push('/marketplace')" />
-          <q-btn flat no-caps label="Publicar oferta" class="text-grey-4" @click="$router.push('/publicar')" />
+          <q-btn
+            flat
+            no-caps
+            label="Inicio"
+            class="text-grey-4"
+            @click="$router.push('/seleccion')"
+          />
+          <q-btn
+            flat
+            no-caps
+            label="Marketplace"
+            class="text-grey-4"
+            @click="$router.push('/marketplace')"
+          />
+          <q-btn
+            flat
+            no-caps
+            label="Publicar oferta"
+            class="text-grey-4"
+            @click="$router.push('/publicar')"
+          />
+          <q-btn
+            flat
+            no-caps
+            label="Dashboard Administrativo"
+            class="text-grey-4"
+            @click="$router.push('/admin')"
+          />
         </div>
 
         <div class="row items-center q-gutter-md">
@@ -40,23 +67,29 @@
             </q-menu>
           </div>
         </div>
-
       </q-toolbar>
     </q-header>
 
     <!-- 2. MENÚ LATERAL IZQUIERDO -->
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered dark :width="260" class="bg-sidebar">
       <q-list class="q-px-sm q-pt-md">
-        <q-item clickable v-for="(item, index) in menuItems" :key="index"
-                :active="$route.path === item.route"
-                active-class="menu-active-item"
-                class="menu-item q-mb-sm rounded-borders"
-                @click="$router.push(item.route)">
+        <q-item
+          clickable
+          v-for="(item, index) in menuItems"
+          :key="index"
+          :active="$route.path === item.route"
+          active-class="menu-active-item"
+          class="menu-item q-mb-sm rounded-borders"
+          @click="$router.push(item.route)"
+        >
           <q-item-section avatar min-width="40px">
             <q-icon :name="item.icon" :color="$route.path === item.route ? 'amber' : 'grey-4'" />
           </q-item-section>
           <q-item-section>
-            <q-item-label class="text-weight-medium" :class="$route.path === item.route ? 'text-amber' : 'text-grey-4'">
+            <q-item-label
+              class="text-weight-medium"
+              :class="$route.path === item.route ? 'text-amber' : 'text-grey-4'"
+            >
               {{ item.title }}
             </q-item-label>
           </q-item-section>
@@ -69,7 +102,9 @@
           <q-icon name="verified" color="green" size="24px" />
           <div>
             <div class="text-green text-weight-bold text-caption">{{ estadoVerif }}</div>
-            <div class="text-grey-5 text-caption" style="font-size: 11px;">Cuenta {{ estadoVerif.toLowerCase() }}</div>
+            <div class="text-grey-5 text-caption" style="font-size: 11px">
+              Cuenta {{ estadoVerif.toLowerCase() }}
+            </div>
           </div>
         </div>
       </div>
@@ -101,6 +136,10 @@ const menuItems = [
   { title: 'Publicar oferta', icon: 'attach_money', route: '/publicar' },
   { title: 'Operación activa', icon: 'schedule', route: '/operacion' },
   { title: 'Verificación', icon: 'verified_user', route: '/verificacion' },
+  { title: 'Comprobante', icon: 'description', route: '/comprobante' },
+  { title: 'Calificación', icon: 'star', route: '/calificacion' },
+  { title: 'Disputa', icon: 'gavel', route: '/disputa' },
+  { title: 'Chat', icon: 'chat', route: '/chat' },
 ]
 
 function cerrarSesion() {
@@ -110,11 +149,31 @@ function cerrarSesion() {
 </script>
 
 <style scoped>
-.bg-dark-custom { background: #0d1117; }
-.bg-header { background: #161b22; border-bottom: 1px solid #30363d; }
-.bg-sidebar { background: #161b22; border-right: 1px solid #30363d; }
-.menu-item { color: #c9d1d9; transition: all 0.2s ease; }
-.menu-item:hover { background: rgba(242, 192, 55, 0.05); }
-.menu-active-item { background: rgba(242, 192, 55, 0.1) !important; border-left: 3px solid #f2c037; }
-.verified-card { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; }
+.bg-dark-custom {
+  background: #0d1117;
+}
+.bg-header {
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+}
+.bg-sidebar {
+  background: #161b22;
+  border-right: 1px solid #30363d;
+}
+.menu-item {
+  color: #c9d1d9;
+  transition: all 0.2s ease;
+}
+.menu-item:hover {
+  background: rgba(242, 192, 55, 0.05);
+}
+.menu-active-item {
+  background: rgba(242, 192, 55, 0.1) !important;
+  border-left: 3px solid #f2c037;
+}
+.verified-card {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+}
 </style>

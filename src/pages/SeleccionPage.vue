@@ -1,8 +1,6 @@
 <template>
   <q-page class="seleccion-page q-pa-lg">
-    <div class="text-h5 text-weight-bold text-white">
-      Bienvenido, {{ nombre }}
-    </div>
+    <div class="text-h5 text-weight-bold text-white">Bienvenido, {{ nombre }}</div>
     <div class="text-grey-5 q-mb-lg">¿Qué deseas hacer hoy?</div>
 
     <div class="row q-col-gutter-lg">
@@ -85,25 +83,32 @@ const nombre = computed(() => auth.usuario?.nombreCompleto?.split(' ')[0] || 'Us
 
 function irAComprar() {
   // Redirige al Dashboard/Marketplace Principal (IndexPage.vue)
-  router.push('/') 
+  router.push('/marketplace')
 }
 function irAVender() {
   // Redirige a la página secundaria de órdenes/ventas (SecondPage.vue)
-  router.push('/second') 
+  router.push('/publicar')
 }
 </script>
 
 <style scoped>
-.seleccion-page { background: #0d1117; min-height: 100vh; }
+.seleccion-page {
+  background: #0d1117;
+  min-height: 100vh;
+}
 .opcion-card {
   background: #161b22;
   border: 1px solid #30363d;
   border-radius: 12px;
   transition: all 0.2s ease-in-out;
 }
-.opcion-card:hover { 
+.opcion-card:hover {
   border: 1px solid #f2c037;
   transform: translateY(-2px); /* Un sutil efecto de elevación al pasar el mouse */
 }
-.info-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; }
+.info-card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+}
 </style>
