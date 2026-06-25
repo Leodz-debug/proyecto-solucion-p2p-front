@@ -34,15 +34,17 @@ const routes = [
   },
 
   // --- 3. Rutas PROTEGIDAS (Panel Principal) ---
-{
-  path: '/',
-  component: () => import('../layouts/MainLayout.vue'),
-  meta: { requiereAuth: true },
-  children: [
-    { path: '', component: () => import('../pages/IndexPage.vue') },
-    { path: 'publicar', component: () => import('../pages/SecondPage.vue') }, 
-  ],
-},
+  {
+    path: '/',
+    component: () => import('../layouts/MainLayout.vue'),
+    meta: { requiereAuth: true },
+    children: [
+      { path: '', redirect: '/seleccion' },
+      { path: 'publicar', component: () => import('../pages/PublicarPage.vue') },
+      { path: 'marketplace', component: () => import('../pages/MarketplacePage.vue') },
+      { path: 'operacion', component: () => import('../pages/OperacionPage.vue') },
+    ],
+  },
 
   // --- 4. 404 ---
   {
