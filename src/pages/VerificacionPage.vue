@@ -51,9 +51,9 @@
       <div class="col-12 col-md-5">
         <q-card class="panel q-pa-md">
           <div class="text-white text-weight-bold q-mb-md">¿Por qué verificarse?</div>
-          <div v-for="(beneficio, i) in beneficios" :key="i" class="row items-center q-mb-sm">
+          <div v-for="(b, i) in beneficios" :key="i" class="row items-center q-mb-sm">
             <q-icon name="check_circle" color="green" size="20px" class="q-mr-sm" />
-            <span class="text-grey-4">{{ beneficio }}</span>
+            <span class="text-grey-4">{{ b }}</span>
           </div>
         </q-card>
       </div>
@@ -69,7 +69,6 @@ import api from '../services/api'
 
 const router = useRouter()
 const auth = useAuthStore()
-
 const tipoDoc = ref('DNI')
 const numeroDoc = ref('')
 const estado = ref(auth.usuario?.estadoVerificacion || 'Pendiente')
