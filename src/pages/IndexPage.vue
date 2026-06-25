@@ -77,7 +77,7 @@ import axios from 'axios'
 const ofertas = ref([])
 const filtros = ref({ tengo: 'USD', quiero: 'PEN', ordenar: 'Mejor tasa' })
 const opcionesMonedas = ['USD', 'PEN', 'EUR']
-const api = axios.create({ baseURL: 'https://localhost:7231' })
+const api = axios.create({ baseURL: 'https://localhost:7196' })
 
 onMounted(async () => {
   try {
