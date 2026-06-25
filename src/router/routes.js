@@ -21,6 +21,7 @@ const routes = [
       { path: '', component: () => import('@/pages/IndexPage.vue') },
       { path: 'second', component: () => import('@/pages/SecondPage.vue') },
       { path: 'verificacion', component: () => import('@/pages/VerificacionPage.vue') },
+      { path: 'seleccion', component: () => import('@/pages/SeleccionPage.vue') },
     ],
   },
   {
