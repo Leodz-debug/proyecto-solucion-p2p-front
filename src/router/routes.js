@@ -2,14 +2,16 @@ const routes = [
   // --- 1. Rutas PÚBLICAS ---
   {
     path: '/login',
-    component: () => import('../layouts/MainLayout.vue'),
+    component: () => import('../layouts/AuthLayout.vue'),
+  
     children: [
       { path: '', component: () => import('../pages/LoginPage.vue') },
     ],
   },
   {
     path: '/registro',
-    component: () => import('../layouts/MainLayout.vue'),
+    component: () => import('../layouts/AuthLayout.vue'),
+    
     children: [
       { path: '', component: () => import('../pages/RegisterPage.vue') },
     ],
