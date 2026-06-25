@@ -1,7 +1,14 @@
 <template>
   <q-page class="publicar-page q-pa-lg">
-    <q-btn flat no-caps color="amber" icon="arrow_back" label="Volver al marketplace"
-      class="q-mb-md q-px-none" @click="$router.push('/marketplace')" />
+    <q-btn
+      flat
+      no-caps
+      color="amber"
+      icon="arrow_back"
+      label="Volver al marketplace"
+      class="q-mb-md q-px-none"
+      @click="$router.push('/marketplace')"
+    />
 
     <div class="row q-col-gutter-lg">
       <div class="col-12 col-md-7">
@@ -11,47 +18,104 @@
           <div class="row q-col-gutter-md">
             <div class="col-6">
               <div class="text-grey-5 text-caption q-mb-xs">Moneda que vendo</div>
-              <q-select v-model="monedaOrigen" :options="monedas" option-label="codigo"
-                option-value="id" emit-value map-options dark outlined color="amber" />
+              <q-select
+                v-model="monedaOrigen"
+                :options="monedas"
+                option-label="codigo"
+                option-value="id"
+                emit-value
+                map-options
+                dark
+                outlined
+                color="amber"
+              />
             </div>
             <div class="col-6">
               <div class="text-grey-5 text-caption q-mb-xs">Moneda que recibo</div>
-              <q-select v-model="monedaDestino" :options="monedas" option-label="codigo"
-                option-value="id" emit-value map-options dark outlined color="amber" />
+              <q-select
+                v-model="monedaDestino"
+                :options="monedas"
+                option-label="codigo"
+                option-value="id"
+                emit-value
+                map-options
+                dark
+                outlined
+                color="amber"
+              />
             </div>
           </div>
 
           <div class="text-grey-5 text-caption q-mb-xs q-mt-md">Tasa de cambio</div>
-          <q-input v-model.number="tasaCambio" type="number" placeholder="3.75"
-            dark outlined color="amber" />
+          <q-input
+            v-model.number="tasaCambio"
+            type="number"
+            placeholder="3.75"
+            dark
+            outlined
+            color="amber"
+          />
 
           <div class="row q-col-gutter-md q-mt-md">
             <div class="col-6">
               <div class="text-grey-5 text-caption q-mb-xs">Monto mínimo (mínimo 10)</div>
-              <q-input v-model.number="montoMinimo" type="number" placeholder="10"
-                dark outlined color="amber" />
+              <q-input
+                v-model.number="montoMinimo"
+                type="number"
+                placeholder="10"
+                dark
+                outlined
+                color="amber"
+              />
             </div>
             <div class="col-6">
               <div class="text-grey-5 text-caption q-mb-xs">Monto máximo</div>
-              <q-input v-model.number="montoMaximo" type="number" placeholder="5000"
-                dark outlined color="amber" />
+              <q-input
+                v-model.number="montoMaximo"
+                type="number"
+                placeholder="5000"
+                dark
+                outlined
+                color="amber"
+              />
             </div>
           </div>
 
           <div class="text-grey-5 text-caption q-mb-xs q-mt-md">Monto disponible</div>
-          <q-input v-model.number="montoDisponible" type="number" placeholder="5000"
-            dark outlined color="amber" />
+          <q-input
+            v-model.number="montoDisponible"
+            type="number"
+            placeholder="5000"
+            dark
+            outlined
+            color="amber"
+          />
 
           <div class="text-grey-5 text-caption q-mb-xs q-mt-md">Método de pago</div>
-          <q-select v-model="metodoPago" :options="['Transferencia bancaria', 'Yape', 'Plin', 'PayPal']"
-            dark outlined color="amber" />
+          <q-select
+            v-model="metodoPago"
+            :options="['Transferencia bancaria', 'Yape', 'Plin', 'PayPal']"
+            dark
+            outlined
+            color="amber"
+          />
 
-          <q-banner v-if="mensaje" dense class="q-mt-md rounded-borders"
-            :class="exito ? 'bg-green-9 text-white' : 'bg-red-9 text-white'">{{ mensaje }}</q-banner>
+          <q-banner
+            v-if="mensaje"
+            dense
+            class="q-mt-md rounded-borders"
+            :class="exito ? 'bg-green-9 text-white' : 'bg-red-9 text-white'"
+            >{{ mensaje }}</q-banner
+          >
 
-          <q-btn label="Publicar oferta" color="amber" text-color="black"
+          <q-btn
+            label="Publicar oferta"
+            color="amber"
+            text-color="black"
             class="full-width text-weight-bold q-mt-md q-py-sm"
-            :loading="cargando" @click="publicar" />
+            :loading="cargando"
+            @click="publicar"
+          />
         </q-card>
       </div>
 
@@ -62,7 +126,9 @@
             <span class="text-white text-weight-bold">Importante</span>
           </div>
           <div class="text-grey-4 q-mb-sm">• Tu oferta será visible para todos los usuarios</div>
-          <div class="text-grey-4 q-mb-sm">• Asegúrate de tener los fondos disponibles antes de publicar</div>
+          <div class="text-grey-4 q-mb-sm">
+            • Asegúrate de tener los fondos disponibles antes de publicar
+          </div>
           <div class="text-grey-4">• El tiempo de respuesta debe ser menor a 15 minutos</div>
         </q-card>
       </div>
@@ -102,9 +168,13 @@ async function cargarMonedas() {
 
 async function publicar() {
   mensaje.value = ''
-  
+
   // Validaciones
-  if (tasaCambio.value <= 0 || montoMinimo.value < 10 || (montoMaximo.value !== null && montoMaximo.value <= montoMinimo.value)) {
+  if (
+    tasaCambio.value <= 0 ||
+    montoMinimo.value < 10 ||
+    (montoMaximo.value !== null && montoMaximo.value <= montoMinimo.value)
+  ) {
     exito.value = false
     mensaje.value = 'Revisa los montos: Mínimo 10, máximo mayor al mínimo, y tasa positiva.'
     return
@@ -117,8 +187,8 @@ async function publicar() {
       usuarioId: auth.usuario.id,
       monedaOrigenId: monedaOrigen.value,
       monedaDestinoId: monedaDestino.value,
-      monedaOrigenNombre: "", // Requerido por el DTO
-      monedaDestinoNombre: "", // Requerido por el DTO
+      monedaOrigenNombre: '', // Requerido por el DTO
+      monedaDestinoNombre: '', // Requerido por el DTO
       tipoOperacion: 'Venta',
       tasaCambio: tasaCambio.value,
       montoMinimo: montoMinimo.value,
@@ -126,7 +196,7 @@ async function publicar() {
       montoDisponible: montoDisponible.value,
       metodoPago: metodoPago.value,
       estado: 'Activa',
-      fechaCreacion: new Date().toISOString() // Requerido por el DTO
+      fechaCreacion: new Date().toISOString(), // Requerido por el DTO
     })
     exito.value = true
     mensaje.value = 'Oferta publicada con éxito.'
@@ -143,6 +213,13 @@ onMounted(cargarMonedas)
 </script>
 
 <style scoped>
-.publicar-page { background: #0d1117; min-height: 100vh; }
-.panel { background: #161b22; border: 1px solid #30363d; border-radius: 12px; }
+.publicar-page {
+  background: #0d1117;
+  min-height: 100vh;
+}
+.panel {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+}
 </style>
