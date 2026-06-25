@@ -6,9 +6,8 @@
     <div class="text-grey-5 q-mb-lg">¿Qué deseas hacer hoy?</div>
 
     <div class="row q-col-gutter-lg">
-      <!-- COMPRAR -->
       <div class="col-12 col-md-6">
-        <q-card class="opcion-card q-pa-lg" clickable @click="irAComprar">
+        <q-card class="opcion-card q-pa-lg cursor-pointer" @click="irAComprar">
           <q-icon name="trending_up" size="40px" color="green" />
           <div class="text-h6 text-weight-bold text-white q-mt-md">Comprar divisas</div>
           <div class="text-grey-5 q-mt-sm">
@@ -18,15 +17,14 @@
             flat
             color="amber"
             label="Ver ofertas disponibles  ›"
-            class="q-mt-md q-px-none"
+            class="q-mt-md q-px-none text-weight-bold"
             no-caps
           />
         </q-card>
       </div>
 
-      <!-- VENDER -->
       <div class="col-12 col-md-6">
-        <q-card class="opcion-card q-pa-lg" clickable @click="irAVender">
+        <q-card class="opcion-card q-pa-lg cursor-pointer" @click="irAVender">
           <q-icon name="attach_money" size="40px" color="amber" />
           <div class="text-h6 text-weight-bold text-white q-mt-md">Vender divisas</div>
           <div class="text-grey-5 q-mt-sm">
@@ -36,14 +34,13 @@
             flat
             color="amber"
             label="Publicar oferta  ›"
-            class="q-mt-md q-px-none"
+            class="q-mt-md q-px-none text-weight-bold"
             no-caps
           />
         </q-card>
       </div>
     </div>
 
-    <!-- Badges de confianza -->
     <div class="row q-col-gutter-md q-mt-lg">
       <div class="col-12 col-md-4">
         <q-card class="info-card q-pa-md row items-center q-gutter-sm">
@@ -79,7 +76,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '../stores/auth' // Ajustado alias a relativo para evitar fallas con Vite
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -87,10 +84,12 @@ const auth = useAuthStore()
 const nombre = computed(() => auth.usuario?.nombreCompleto?.split(' ')[0] || 'Usuario')
 
 function irAComprar() {
-  router.push('/marketplace')
+  // Redirige al Dashboard/Marketplace Principal (IndexPage.vue)
+  router.push('/') 
 }
 function irAVender() {
-  router.push('/publicar')
+  // Redirige a la página secundaria de órdenes/ventas (SecondPage.vue)
+  router.push('/second') 
 }
 </script>
 
@@ -100,8 +99,11 @@ function irAVender() {
   background: #161b22;
   border: 1px solid #30363d;
   border-radius: 12px;
-  transition: border 0.2s;
+  transition: all 0.2s ease-in-out;
 }
-.opcion-card:hover { border: 1px solid #f2c037; }
+.opcion-card:hover { 
+  border: 1px solid #f2c037;
+  transform: translateY(-2px); /* Un sutil efecto de elevación al pasar el mouse */
+}
 .info-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; }
 </style>

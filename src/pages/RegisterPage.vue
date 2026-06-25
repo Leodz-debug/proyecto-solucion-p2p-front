@@ -47,7 +47,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -69,7 +69,12 @@ async function crear() {
       password: password.value,
       telefono: telefono.value,
     })
-    router.push('/') // registrado y logueado, va al inicio
+    
+    // Forzar login manual limpiando tokens automáticos del backend
+    localStorage.removeItem('token')
+    if (auth.logout) auth.logout()
+
+    router.push('/login') 
   } catch (e) {
     if (e.response?.status === 400) {
       error.value = 'El correo ya está registrado.'
@@ -83,22 +88,10 @@ async function crear() {
 </script>
 
 <style scoped>
-.register-page {
-  background: #0d1117;
-  min-height: 100vh;
-}
-.register-card {
-  background: #161b22;
-  border: 1px solid #30363d;
-  border-radius: 12px;
-  width: 420px;
-}
-/* Evita que el autocompletar del navegador pinte los campos de blanco */
-:deep(input:-webkit-autofill),
-:deep(input:-webkit-autofill:hover),
-:deep(input:-webkit-autofill:focus) {
+.register-page { background: #0d1117; min-height: 100vh; }
+.register-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; width: 420px; }
+:deep(input:-webkit-autofill) {
   -webkit-text-fill-color: white !important;
   -webkit-box-shadow: 0 0 0 1000px #161b22 inset !important;
-  caret-color: white;
 }
 </style>
