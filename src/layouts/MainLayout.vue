@@ -45,7 +45,13 @@
     </q-header>
 
     <!-- 2. MENÚ LATERAL IZQUIERDO -->
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered dark :width="260" class="bg-sidebar">
+    <q-drawer
+  v-model="leftDrawerOpen"
+  show-if-above
+  bordered
+  class="bg-dark"
+>
+>
       <q-list class="q-px-sm q-pt-md">
         <q-item clickable v-for="(item, index) in menuItems" :key="index"
                 :active="$route.path === item.route"
