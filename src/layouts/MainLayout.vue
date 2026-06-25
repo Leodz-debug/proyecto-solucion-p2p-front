@@ -1,6 +1,5 @@
 <template>
   <q-layout view="lHh Lpr lFf" class="bg-dark-custom">
-    <!-- 1. BARRA DE NAVEGACIÓN SUPERIOR -->
     <q-header elevated class="bg-header q-px-md">
       <q-toolbar class="row justify-between items-center q-py-xs">
 
@@ -12,14 +11,12 @@
           </span>
         </div>
 
-        <!-- Menú Central (Accesos Rápidos) -->
         <div class="row items-center q-gutter-md gt-xs">
           <q-btn flat no-caps label="Inicio" class="text-grey-4" @click="$router.push('/seleccion')" />
           <q-btn flat no-caps label="Marketplace" class="text-grey-4" @click="$router.push('/marketplace')" />
           <q-btn flat no-caps label="Publicar oferta" class="text-grey-4" @click="$router.push('/publicar')" />
         </div>
 
-        <!-- Perfil / Notificaciones Derecha -->
         <div class="row items-center q-gutter-md">
           <q-btn dense flat round icon="notifications" color="grey-4">
             <q-badge color="red" floating dotted />
