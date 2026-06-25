@@ -4,9 +4,7 @@
     <div class="text-grey-5 q-mb-lg">Completa tu verificación KYC para operar en la plataforma</div>
 
     <div class="row q-col-gutter-lg">
-      <!-- IZQUIERDA: estado + subir documento -->
       <div class="col-12 col-md-7">
-        <!-- Estado actual -->
         <q-card class="panel q-pa-md q-mb-md">
           <div class="row items-center q-gutter-sm">
             <q-icon name="schedule" color="amber" size="28px" />
@@ -15,38 +13,23 @@
               <div class="text-grey-5 text-caption">Completa la verificación para operar</div>
             </div>
           </div>
-          <q-linear-progress
-            :value="progreso"
-            color="amber"
-            class="q-mt-md"
-            size="10px"
-            rounded
-          />
+          <q-linear-progress :value="progreso" color="amber" class="q-mt-md" size="10px" rounded />
           <div class="text-right text-grey-5 text-caption q-mt-xs">{{ Math.round(progreso * 100) }}%</div>
         </q-card>
 
-        <!-- Subir documento -->
         <q-card class="panel q-pa-md">
           <div class="row q-col-gutter-md">
             <div class="col-6">
-              <q-card
-                clickable
-                class="doc-option q-pa-md text-center"
-                :class="{ 'doc-selected': tipoDoc === 'DNI' }"
-                @click="tipoDoc = 'DNI'"
-              >
+              <q-card clickable class="doc-option q-pa-md text-center"
+                :class="{ 'doc-selected': tipoDoc === 'DNI' }" @click="tipoDoc = 'DNI'">
                 <q-icon name="badge" size="32px" color="amber" />
                 <div class="text-white text-weight-bold q-mt-sm">Subir DNI</div>
                 <div class="text-grey-5 text-caption">Documento Nacional de Identidad</div>
               </q-card>
             </div>
             <div class="col-6">
-              <q-card
-                clickable
-                class="doc-option q-pa-md text-center"
-                :class="{ 'doc-selected': tipoDoc === 'Pasaporte' }"
-                @click="tipoDoc = 'Pasaporte'"
-              >
+              <q-card clickable class="doc-option q-pa-md text-center"
+                :class="{ 'doc-selected': tipoDoc === 'Pasaporte' }" @click="tipoDoc = 'Pasaporte'">
                 <q-icon name="travel_explore" size="32px" color="amber" />
                 <div class="text-white text-weight-bold q-mt-sm">Subir Pasaporte</div>
                 <div class="text-grey-5 text-caption">Pasaporte internacional</div>
@@ -54,39 +37,25 @@
             </div>
           </div>
 
-          <q-input
-            v-model="numeroDoc"
-            label="Número de documento"
-            dark outlined color="amber"
-            class="q-mt-md"
-          />
+          <q-input v-model="numeroDoc" label="Número de documento" dark outlined color="amber" class="q-mt-md" />
 
           <q-banner v-if="mensaje" dense class="q-mt-md rounded-borders"
-            :class="exito ? 'bg-green-9 text-white' : 'bg-red-9 text-white'">
-            {{ mensaje }}
-          </q-banner>
+            :class="exito ? 'bg-green-9 text-white' : 'bg-red-9 text-white'">{{ mensaje }}</q-banner>
 
           <div class="row q-gutter-sm q-mt-md">
-            <q-btn
-              label="Enviar verificación"
-              color="amber"
-              text-color="black"
-              class="text-weight-bold col"
-              :loading="cargando"
-              @click="enviarVerificacion"
-            />
+            <q-btn label="Enviar verificación" color="amber" text-color="black"
+              class="text-weight-bold col" :loading="cargando" @click="enviarVerificacion" />
             <q-btn label="Más tarde" outline color="grey-5" @click="$router.push('/')" />
           </div>
         </q-card>
       </div>
 
-      <!-- DERECHA: por qué verificarse -->
       <div class="col-12 col-md-5">
         <q-card class="panel q-pa-md">
           <div class="text-white text-weight-bold q-mb-md">¿Por qué verificarse?</div>
-          <div v-for="(beneficio, i) in beneficios" :key="i" class="row items-center q-mb-sm">
+          <div v-for="(b, i) in beneficios" :key="i" class="row items-center q-mb-sm">
             <q-icon name="check_circle" color="green" size="20px" class="q-mr-sm" />
-            <span class="text-grey-4">{{ beneficio }}</span>
+            <span class="text-grey-4">{{ b }}</span>
           </div>
         </q-card>
       </div>
@@ -100,7 +69,6 @@ import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
 
 const auth = useAuthStore()
-
 const tipoDoc = ref('DNI')
 const numeroDoc = ref('')
 const estado = ref(auth.usuario?.estadoVerificacion || 'Pendiente')
@@ -115,7 +83,6 @@ const beneficios = [
   'Cumplimiento regulatorio',
 ]
 
-// La barra avanza según el estado
 const progreso = computed(() => {
   if (estado.value === 'Verificado') return 1
   if (estado.value === 'Pendiente') return 0.3

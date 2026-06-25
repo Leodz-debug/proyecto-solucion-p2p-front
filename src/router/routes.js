@@ -1,5 +1,4 @@
 const routes = [
-  // --- Rutas PÚBLICAS (sin login) ---
   {
     path: '/login',
     component: () => import('@/layouts/MainLayout.vue'),
@@ -14,8 +13,6 @@ const routes = [
       { path: '', component: () => import('@/pages/RegisterPage.vue') },
     ],
   },
-
-  // --- Rutas PROTEGIDAS (requieren login) ---
   {
     path: '/',
     component: () => import('@/layouts/MainLayout.vue'),
@@ -27,7 +24,6 @@ const routes = [
       { path: 'seleccion', component: () => import('@/pages/SeleccionPage.vue') },
     ],
   },
-
   {
     path: '/:catchAll(.*)*',
     component: () => import('@/pages/ErrorNotFound.vue'),
