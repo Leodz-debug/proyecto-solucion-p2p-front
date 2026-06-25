@@ -1,10 +1,8 @@
 <template>
   <q-layout view="lHh Lpr lFf" class="bg-dark-custom">
-    <!-- 1. BARRA DE NAVEGACIÓN SUPERIOR -->
     <q-header elevated class="bg-header q-px-md">
       <q-toolbar class="row justify-between items-center q-py-xs">
         
-        <!-- Logo Izquierda -->
         <div class="row items-center q-gutter-xs cursor-pointer" @click="$router.push('/')">
           <q-icon name="shield" size="28px" color="amber" />
           <span class="text-h6 text-weight-bold text-white">
@@ -12,14 +10,12 @@
           </span>
         </div>
 
-        <!-- Menú Central (Accesos Rápidos) -->
         <div class="row items-center q-gutter-md gt-xs">
           <q-btn flat no-caps label="Inicio" class="text-weight-medium rounded-borders" :class="{ 'bg-amber text-black': $route.path === '/seleccion' }" @click="$router.push('/seleccion')" />
           <q-btn flat no-caps label="Marketplace" class="text-grey-4" @click="$router.push('/')" />
-          <q-btn flat no-caps label="Publicar oferta" class="text-grey-4" @click="$router.push('/second')" />
+          <q-btn flat no-caps label="Publicar oferta" class="text-grey-4" @click="$router.push('/publicar')" />
         </div>
 
-        <!-- Perfil / Notificaciones Derecha -->
         <div class="row items-center q-gutter-md">
           <q-btn dense flat round icon="notifications" color="grey-4">
             <q-badge color="red" floating dotted />
@@ -37,7 +33,6 @@
       </q-toolbar>
     </q-header>
 
-    <!-- 2. MENÚ LATERAL IZQUIERDO -->
     <q-drawer
       v-model="leftDrawerOpen"
       show-if-above
@@ -47,7 +42,6 @@
       class="bg-sidebar"
     >
       <q-list class="q-px-sm q-pt-md">
-        <!-- Ítems del Menú Lateral -->
         <q-item clickable v-for="(item, index) in menuItems" :key="index" 
                 :active="$route.path === item.route"
                 active-class="menu-active-item"
@@ -64,7 +58,6 @@
         </q-item>
       </q-list>
 
-      <!-- Estado Verificado abajo en el menú lateral -->
       <div class="absolute-bottom q-pa-md">
         <div class="verified-card q-pa-sm row items-center q-gutter-sm">
           <q-icon name="verified" color="green" size="24px" />
@@ -76,7 +69,6 @@
       </div>
     </q-drawer>
 
-    <!-- 3. CONTENEDOR PRINCIPAL DE LAS PÁGINAS -->
     <q-page-container>
       <router-view />
     </q-page-container>
@@ -90,15 +82,13 @@ import { useAuthStore } from '../stores/auth'
 const auth = useAuthStore()
 const leftDrawerOpen = ref(true)
 
-// Datos dinámicos del usuario desde Pinia
 const nombreCompleto = computed(() => auth.usuario?.nombreCompleto || 'Juan Pérez')
 const nombreAvatar = computed(() => nombreCompleto.value.charAt(0).toUpperCase())
 
-// Configuración del menú lateral solicitado en la imagen image_07a45a.png
 const menuItems = [
   { title: 'Inicio', icon: 'home', route: '/seleccion' },
   { title: 'Marketplace', icon: 'language', route: '/' },
-  { title: 'Publicar oferta', icon: 'attach_money', route: '/second' },
+  { title: 'Publicar oferta', icon: 'attach_money', route: '/publicar' },
   { title: 'Operación activa', icon: 'schedule', route: '/operacion' },
   { title: 'Chat', icon: 'chat_bubble_outline', route: '/chat' },
   { title: 'Disputas', icon: 'gavel', route: '/disputas' },
@@ -107,28 +97,13 @@ const menuItems = [
 </script>
 
 <style scoped>
-/* Colores de fondo basados en la interfaz de la maqueta */
 .bg-dark-custom { background: #0d1117; }
 .bg-header { background: #161b22; border-bottom: 1px solid #30363d; }
 .bg-sidebar { background: #161b22; border-right: 1px solid #30363d; }
 
-/* Estilos de los elementos del menú lateral */
-.menu-item {
-  color: #c9d1d9;
-  transition: all 0.2s ease;
-}
-.menu-item:hover {
-  background: rgba(242, 192, 55, 0.05);
-}
-.menu-active-item {
-  background: rgba(242, 192, 55, 0.1) !important;
-  border-left: 3px solid #f2c037;
-}
+.menu-item { color: #c9d1d9; transition: all 0.2s ease; }
+.menu-item:hover { background: rgba(242, 192, 55, 0.05); }
+.menu-active-item { background: rgba(242, 192, 55, 0.1) !important; border-left: 3px solid #f2c037; }
 
-/* Tarjeta inferior de verificado */
-.verified-card {
-  background: #0d1117;
-  border: 1px solid #30363d;
-  border-radius: 8px;
-}
+.verified-card { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; }
 </style>
