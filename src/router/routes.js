@@ -1,5 +1,5 @@
 const routes = [
-  // --- 1. Rutas PÚBLICAS (Sin Login) ---
+  // --- 1. Rutas PÚBLICAS ---
   {
     path: '/login',
     component: () => import('../layouts/MainLayout.vue'),
@@ -15,7 +15,7 @@ const routes = [
     ],
   },
 
-  // --- 2. Flujo Intermedio de Verificación (Requieren Token) ---
+  // --- 2. Flujo Intermedio ---
   {
     path: '/verificacion',
     component: () => import('../layouts/MainLayout.vue'),
@@ -33,18 +33,18 @@ const routes = [
     ],
   },
 
-  // --- 3. Rutas PROTEGIDAS (Panel Principal / Dashboard) ---
-  {
-    path: '/',
-    component: () => import('../layouts/MainLayout.vue'),
-    meta: { requiereAuth: true },
-    children: [
-      { path: '', component: () => import('../pages/IndexPage.vue') },
-      { path: 'second', component: () => import('../pages/SecondPage.vue') },
-    ],
-  },
+  // --- 3. Rutas PROTEGIDAS (Panel Principal) ---
+{
+  path: '/',
+  component: () => import('../layouts/MainLayout.vue'),
+  meta: { requiereAuth: true },
+  children: [
+    { path: '', component: () => import('../pages/IndexPage.vue') },
+    { path: 'publicar', component: () => import('../pages/SecondPage.vue') }, 
+  ],
+},
 
-  // --- 4. 404 Not Found ---
+  // --- 4. 404 ---
   {
     path: '/:catchAll(.*)*',
     component: () => import('../pages/ErrorNotFound.vue'),
