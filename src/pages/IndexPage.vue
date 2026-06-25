@@ -1,28 +1,17 @@
 <template>
-  <q-page class="flex flex-center column q-gutter-md">
-    <h5>Prueba de conexión con la API</h5>
-    <q-btn color="primary" label="Traer monedas" @click="traerMonedas" />
-    <div v-if="monedas.length">
-      <div v-for="m in monedas" :key="m.id">{{ m.codigo }} - {{ m.nombre }}</div>
+  <q-page class="flex flex-center">
+    <div class="column items-center">
+      <img
+        alt="Quasar logo"
+        src="~@/assets/quasar-logo-vertical.svg"
+        style="width: 200px; height: 200px"
+      />
+
+      <q-btn class="q-mt-md" color="primary" to="/second" label="Go to Second Page" no-caps />
     </div>
-    <div v-if="error" class="text-red">{{ error }}</div>
   </q-page>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import api from '../services/api'
-
-const monedas = ref([])
-const error = ref('')
-
-async function traerMonedas() {
-  try {
-    const res = await api.get('/moneda')
-    monedas.value = res.data
-    error.value = ''
-  } catch (e) {
-    error.value = 'Error: ' + e.message
-  }
-}
+//
 </script>

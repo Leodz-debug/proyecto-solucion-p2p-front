@@ -2,7 +2,6 @@
   <q-page class="login-page flex flex-center">
     <div class="login-container row items-center justify-center">
 
-      <!-- IZQUIERDA: marca -->
       <div class="col-12 col-md-6 text-center q-pa-xl branding">
         <q-icon name="shield" size="64px" color="amber" />
         <div class="text-h4 text-weight-bold q-mt-md text-white">
@@ -19,7 +18,6 @@
         </div>
       </div>
 
-      <!-- DERECHA: formulario -->
       <div class="col-12 col-md-5">
         <q-card class="login-card q-pa-lg">
           <div class="text-h6 text-weight-bold text-white">Iniciar sesión</div>
@@ -70,7 +68,8 @@
 
           <div class="text-center q-mt-md text-grey-5">
             ¿No tienes cuenta?
-            <span class="text-amber cursor-pointer" @click="$router.push('/registro')">Crear cuenta</span>          </div>
+            <span class="text-amber cursor-pointer" @click="irARegistro">Crear cuenta</span>
+          </div>
         </q-card>
       </div>
 
@@ -81,7 +80,8 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+// Cambiado alias por ruta relativa por si Vite reclama la @
+import { useAuthStore } from '../stores/auth' 
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -97,7 +97,8 @@ async function ingresar() {
   cargando.value = true
   try {
     await auth.login(correo.value, password.value)
-    router.push('/')
+    // CAMBIO CLAVE: Te manda directo a verificación tras iniciar sesión con éxito
+    router.push('/verificacion') 
   } catch (e) {
     if (e.response?.status === 401) {
       error.value = 'Correo o contraseña incorrectos.'
@@ -107,6 +108,10 @@ async function ingresar() {
   } finally {
     cargando.value = false
   }
+}
+
+function irARegistro() {
+  router.push('/registro')
 }
 </script>
 
@@ -124,7 +129,6 @@ async function ingresar() {
   border: 1px solid #30363d;
   border-radius: 12px;
 }
-/* Evita que el autocompletar del navegador pinte los campos de blanco */
 :deep(input:-webkit-autofill),
 :deep(input:-webkit-autofill:hover),
 :deep(input:-webkit-autofill:focus) {
