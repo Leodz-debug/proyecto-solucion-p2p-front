@@ -36,6 +36,7 @@
             @click="$router.push('/publicar')"
           />
           <q-btn
+            v-if="auth.usuario?.rol === 'Administrador'"
             flat
             no-caps
             label="Dashboard Administrativo"
@@ -45,8 +46,52 @@
         </div>
 
         <div class="row items-center q-gutter-md">
+          <!-- Botón de Notificaciones-->
           <q-btn dense flat round icon="notifications" color="grey-4">
-            <q-badge color="red" floating dotted />
+            <q-badge
+              v-if="auth.usuario?.estadoVerificacion === 'Pendiente'"
+              color="red"
+              floating
+              rounded
+            />
+
+            <q-menu anchor="bottom right" self="top right" style="width: 320px">
+              <q-list separator>
+                <q-item v-if="auth.usuario?.estadoVerificacion === 'Pendiente'">
+                  <q-item-section avatar>
+                    <q-icon color="orange" name="warning" />
+                  </q-item-section>
+
+                  <q-item-section>
+                    <q-item-label class="text-weight-bold"> Verificación pendiente </q-item-label>
+
+                    <q-item-label caption>
+                      Tu identidad aún no ha sido aprobada. Algunas funciones estarán deshabilitadas
+                      hasta que un administrador revise tu solicitud.
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-item v-if="auth.usuario?.estadoVerificacion === 'Verificado'">
+                  <q-item-section avatar>
+                    <q-icon color="green" name="verified" />
+                  </q-item-section>
+
+                  <q-item-section>
+                    <q-item-label> Tu cuenta ya fue verificada. </q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-item
+                  v-if="
+                    auth.usuario?.estadoVerificacion !== 'Pendiente' &&
+                    auth.usuario?.estadoVerificacion !== 'Verificado'
+                  "
+                >
+                  <q-item-section> No tienes notificaciones. </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </q-btn>
 
           <!-- Avatar con menú desplegable (logout) -->
@@ -71,13 +116,7 @@
     </q-header>
 
     <!-- 2. MENÚ LATERAL IZQUIERDO -->
-    <q-drawer
-  v-model="leftDrawerOpen"
-  show-if-above
-  bordered
-  class="bg-dark"
->
->
+    <q-drawer v-model="leftDrawerOpen" show-if-above bordered class="bg-dark">
       <q-list class="q-px-sm q-pt-md">
         <q-item
           clickable
@@ -106,6 +145,7 @@
       <div class="absolute-bottom q-pa-md">
         <div class="verified-card q-pa-sm row items-center q-gutter-sm">
           <q-icon name="verified" color="green" size="24px" />
+
           <div>
             <div class="text-green text-weight-bold text-caption">{{ estadoVerif }}</div>
             <div class="text-grey-5 text-caption" style="font-size: 11px">

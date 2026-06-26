@@ -82,6 +82,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 // Cambiado alias por ruta relativa por si Vite reclama la @
 import { useAuthStore } from '../stores/auth'
+import api from '@/services/api'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -95,18 +96,23 @@ const verPass = ref(false)
 async function ingresar() {
   error.value = ''
   cargando.value = true
-  try {
-    await auth.login(correo.value, password.value)
-    // CAMBIO CLAVE: Te manda directo a verificación tras iniciar sesión con éxito
+
+  // Iniciar sesión
+  await auth.login(correo.value, password.value)
+
+  // Si es administrador termina aquí
+  if (auth.usuario.rol === 'Administrador') {
+    router.push('/admin')
+    return
+  }
+
+  // Solo los usuarios normales consultan su verificación
+  const { data } = await api.get(`/verificacionidentidad/usuario/${auth.usuario.id}`)
+
+  if (data.estadoVerificacion === 'Verificado' || data.estadoVerificacion === 'Pendiente') {
+    router.push('/seleccion')
+  } else {
     router.push('/verificacion')
-  } catch (e) {
-    if (e.response?.status === 401) {
-      error.value = 'Correo o contraseña incorrectos.'
-    } else {
-      error.value = 'Error de conexión con el servidor.'
-    }
-  } finally {
-    cargando.value = false
   }
 }
 
