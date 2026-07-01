@@ -97,22 +97,40 @@ async function ingresar() {
   error.value = ''
   cargando.value = true
 
-  // Iniciar sesión
-  await auth.login(correo.value, password.value)
+  try {
+    // Iniciar sesión
+    await auth.login(correo.value, password.value)
 
-  // Si es administrador termina aquí
-  if (auth.usuario.rol === 'Administrador') {
-    router.push('/admin')
-    return
-  }
+    // Si es administrador termina aquí
+    if (auth.usuario.rol === 'Administrador') {
+      router.push('/admin')
+      return
+    }
 
-  // Solo los usuarios normales consultan su verificación
-  const { data } = await api.get(`/verificacionidentidad/usuario/${auth.usuario.id}`)
+    // Solo los usuarios normales consultan su verificación
+    try {
+      const { data } = await api.get(`/verificacionidentidad/usuario/${auth.usuario.id}`)
 
-  if (data.estadoVerificacion === 'Verificado' || data.estadoVerificacion === 'Pendiente') {
-    router.push('/seleccion')
-  } else {
-    router.push('/verificacion')
+      if (data.estadoVerificacion === 'Verificado' || data.estadoVerificacion === 'Pendiente') {
+        router.push('/seleccion')
+      } else {
+        router.push('/verificacion')
+      }
+    } catch {
+      // El usuario aún no tiene un registro de verificación (404 esperado en la primera vez)
+      router.push('/verificacion')
+    }
+  } catch (e) {
+    if (e.code === 'ERR_NETWORK' || !e.response) {
+      error.value = 'No se pudo conectar con el servidor. Verifica que el backend esté corriendo.'
+    } else if (e.response.status === 401) {
+      error.value = 'Correo o contraseña incorrectos.'
+    } else {
+      error.value = 'Ocurrió un error al iniciar sesión. Intenta de nuevo.'
+    }
+    console.error('Error de login:', e)
+  } finally {
+    cargando.value = false
   }
 }
 

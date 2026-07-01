@@ -37,6 +37,7 @@ const routes = [
       { path: 'publicar', component: () => import('../pages/PublicarPage.vue') },
       { path: 'marketplace', component: () => import('../pages/MarketplacePage.vue') },
       { path: 'operacion', component: () => import('../pages/OperacionPage.vue') },
+      { path: 'operacion/:id', component: () => import('../pages/OperacionDetallePage.vue') },
       { path: 'comprobante', component: () => import('../pages/ComprobantePage.vue') },
       { path: 'calificacion', component: () => import('../pages/CalificacionPage.vue') },
       { path: 'disputa', component: () => import('../pages/DisputaPage.vue') },

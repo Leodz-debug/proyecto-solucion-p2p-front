@@ -3,11 +3,24 @@
     <q-btn flat color="amber" icon="arrow_back" label="Volver" @click="$router.back()" />
 
     <div class="text-h5 text-white text-weight-bold q-mt-md">Subir comprobante</div>
-
-    <div class="text-grey-5 q-mb-lg">Operación #{{ operacionId }}</div>
+    <div class="text-grey-5 q-mb-lg">Adjunta el comprobante de tu pago para continuar</div>
 
     <q-card class="panel q-pa-lg">
-      <q-input v-model="rutaArchivo" label="Ruta del archivo" outlined dark />
+      <q-file
+        v-model="archivo"
+        label="Arrastra tu comprobante aquí o haz clic para seleccionar"
+        dark
+        outlined
+        accept=".jpg,.jpeg,.png,.pdf"
+        max-file-size="5242880"
+        @rejected="onRechazado"
+      >
+        <template v-slot:prepend><q-icon name="cloud_upload" color="amber" /></template>
+      </q-file>
+
+      <div class="text-grey-6 text-caption q-mt-sm">
+        Formatos aceptados: JPG, PNG, PDF (máx. 5MB)
+      </div>
 
       <q-banner
         v-if="mensaje"
@@ -21,8 +34,9 @@
         class="q-mt-lg full-width"
         color="amber"
         text-color="black"
-        label="Guardar comprobante"
+        label="Enviar comprobante"
         :loading="loading"
+        :disable="!archivo"
         @click="guardar"
       />
     </q-card>
@@ -39,50 +53,47 @@ const router = useRouter()
 
 const operacionId = Number(route.query.operacion)
 
-const rutaArchivo = ref('')
+const archivo = ref(null)
 const loading = ref(false)
 const mensaje = ref('')
 const ok = ref(false)
 
+function onRechazado() {
+  ok.value = false
+  mensaje.value = 'Archivo inválido: revisa el formato (JPG, PNG, PDF) y que pese menos de 5MB.'
+}
+
 async function guardar() {
   mensaje.value = ''
 
-  if (!rutaArchivo.value) {
+  if (!archivo.value) {
     ok.value = false
-    mensaje.value = 'Ingrese la ruta del archivo'
+    mensaje.value = 'Selecciona un archivo.'
     return
   }
 
   loading.value = true
-
   try {
-    await api.get(`/operacion/${operacionId}`)
-  } catch {
-    ok.value = false
-    mensaje.value = 'La operación no existe.'
-    loading.value = false
-    return
-  }
+    const formData = new FormData()
+    formData.append('operacionId', operacionId)
+    formData.append('archivo', archivo.value)
 
-  try {
-    await api.post('/comprobantepago', {
-      operacionId: operacionId,
-      rutaArchivo: rutaArchivo.value,
-      fechaSubida: new Date().toISOString(),
+    await api.post('/comprobantepago/subir', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     })
 
     ok.value = true
-    mensaje.value = 'Comprobante registrado.'
+    mensaje.value = 'Comprobante enviado. El vendedor fue notificado.'
 
     setTimeout(() => {
-      router.push('/operacion')
+      router.push('/operacion/' + operacionId)
     }, 1200)
-  } catch {
+  } catch (e) {
     ok.value = false
-    mensaje.value = 'Error al registrar.'
+    mensaje.value = e.response?.data?.mensaje || 'Error al enviar el comprobante.'
+  } finally {
+    loading.value = false
   }
-
-  loading.value = false
 }
 
 onMounted(async () => {
@@ -99,9 +110,9 @@ onMounted(async () => {
   background: #0d1117;
   min-height: 100vh;
 }
-
 .panel {
   background: #161b22;
   border: 1px solid #30363d;
+  border-radius: 12px;
 }
 </style>

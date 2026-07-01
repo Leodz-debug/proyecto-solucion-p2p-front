@@ -24,7 +24,20 @@
       <div v-for="op in operaciones" :key="op.id" class="col-12 col-md-6">
         <q-card class="panel q-pa-md">
           <div class="text-white text-weight-bold">Código: {{ op.codigoOperacion }}</div>
-          <div class="text-grey-4 q-mb-sm">Estado: {{ op.estado }}</div>
+          <div class="text-grey-4 q-mb-sm row items-center q-gutter-x-xs">
+            <span>Estado: {{ op.estado }}</span>
+            <q-badge v-if="op.estado === 'En proceso'" color="amber" text-color="black">
+              {{ formatearSegundos(op.segundosRestantes) }}
+            </q-badge>
+          </div>
+          <q-btn
+            v-if="op.estado === 'En proceso'"
+            class="full-width q-mb-sm"
+            color="amber"
+            text-color="black"
+            label="Ver temporizador"
+            @click="$router.push('/operacion/' + op.id)"
+          />
           <div class="row justify-between text-grey-4">
             <span>Monto:</span><span class="text-white">{{ op.monto }}</span>
           </div>
@@ -131,6 +144,15 @@ async function cargarOperaciones() {
 }
 
 onMounted(cargarOperaciones)
+
+function formatearSegundos(s) {
+  const total = Math.max(0, s ?? 0)
+  const min = Math.floor(total / 60)
+    .toString()
+    .padStart(2, '0')
+  const seg = (total % 60).toString().padStart(2, '0')
+  return `${min}:${seg}`
+}
 </script>
 
 <style scoped>
