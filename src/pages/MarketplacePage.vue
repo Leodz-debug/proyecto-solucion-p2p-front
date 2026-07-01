@@ -126,11 +126,52 @@
             color="amber"
             text-color="black"
             class="full-width text-weight-bold"
-            @click="iniciarTrato(oferta)"
+            @click="abrirDialogoTrato(oferta)"
           />
         </q-card>
       </div>
     </div>
+
+    <!-- ===== DIÁLOGO: confirmar monto e iniciar trato ===== -->
+    <q-dialog v-model="dialogoAbierto">
+      <q-card class="panel q-pa-lg" style="min-width: 320px">
+        <div class="text-h6 text-white q-mb-sm">Confirmar trato</div>
+        <div class="text-grey-5 q-mb-md">
+          Tasa: <span class="text-amber">{{ ofertaSeleccionada?.tasaCambio }}</span> · Límites:
+          {{ ofertaSeleccionada?.montoMinimo }} - {{ ofertaSeleccionada?.montoMaximo }}
+        </div>
+
+        <q-input
+          v-model.number="montoTrato"
+          type="number"
+          label="Monto a operar"
+          dark
+          outlined
+          color="amber"
+          :rules="[
+            (v) => v > 0 || 'Ingresa un monto',
+            (v) => v >= ofertaSeleccionada?.montoMinimo || 'Monto menor al mínimo permitido',
+            (v) => v <= ofertaSeleccionada?.montoMaximo || 'Monto mayor al máximo permitido',
+          ]"
+        />
+
+        <q-banner v-if="errorDialogo" dense class="bg-red-9 text-white q-mt-md rounded-borders">
+          {{ errorDialogo }}
+        </q-banner>
+
+        <div class="row q-gutter-sm q-mt-lg">
+          <q-btn flat color="grey-5" label="Cancelar" v-close-popup class="col" />
+          <q-btn
+            color="amber"
+            text-color="black"
+            label="Confirmar"
+            class="col text-weight-bold"
+            :loading="iniciando"
+            @click="confirmarTrato"
+          />
+        </div>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -198,8 +239,44 @@ function limpiarFiltros() {
   ordenarPor.value = 'Mejor tasa'
 }
 
-function iniciarTrato(oferta) {
-  router.push('/operacion?oferta=' + oferta.id)
+const dialogoAbierto = ref(false)
+const ofertaSeleccionada = ref(null)
+const montoTrato = ref(0)
+const iniciando = ref(false)
+const errorDialogo = ref('')
+
+function abrirDialogoTrato(oferta) {
+  ofertaSeleccionada.value = oferta
+  montoTrato.value = oferta.montoMinimo
+  errorDialogo.value = ''
+  dialogoAbierto.value = true
+}
+
+async function confirmarTrato() {
+  errorDialogo.value = ''
+  const oferta = ofertaSeleccionada.value
+  if (
+    !montoTrato.value ||
+    montoTrato.value < oferta.montoMinimo ||
+    montoTrato.value > oferta.montoMaximo
+  ) {
+    errorDialogo.value = `El monto debe estar entre ${oferta.montoMinimo} y ${oferta.montoMaximo}.`
+    return
+  }
+
+  iniciando.value = true
+  try {
+    const res = await api.post('/operacion/iniciar-trato', {
+      ofertaId: oferta.id,
+      monto: montoTrato.value,
+    })
+    dialogoAbierto.value = false
+    router.push('/operacion/' + res.data.id)
+  } catch (e) {
+    errorDialogo.value = e.response?.data?.mensaje || 'No se pudo iniciar el trato.'
+  } finally {
+    iniciando.value = false
+  }
 }
 
 onMounted(cargarDatos)

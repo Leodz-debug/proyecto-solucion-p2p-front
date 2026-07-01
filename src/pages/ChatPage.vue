@@ -37,7 +37,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 import { useRoute } from 'vue-router'
 
@@ -54,6 +54,8 @@ const operacionId = Number(route.query.operacion)
 const mensajes = ref([])
 
 const texto = ref('')
+
+let intervaloPolling = null
 
 async function cargar() {
   const res = await api.get('/mensaje')
@@ -90,7 +92,15 @@ async function enviar() {
   await cargar()
 }
 
-onMounted(cargar)
+onMounted(() => {
+  cargar()
+  // Simula tiempo real: revisa mensajes nuevos cada 4 segundos
+  intervaloPolling = setInterval(cargar, 4000)
+})
+
+onUnmounted(() => {
+  if (intervaloPolling) clearInterval(intervaloPolling)
+})
 </script>
 
 <style scoped>
