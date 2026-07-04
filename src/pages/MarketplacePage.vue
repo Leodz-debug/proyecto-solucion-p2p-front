@@ -94,7 +94,7 @@
 
         <div class="q-ml-md">
           <div class="text-white text-weight-bold text-subtitle1">
-            Vendedor #{{ oferta.usuarioId }}
+            Vendedor: {{ oferta.nombreVendedor }}
           </div>
 
           <div class="text-amber text-caption">
@@ -155,11 +155,12 @@
           </div>
 
           <q-btn
-            label="Comprar"
-            color="amber"
-            text-color="black"
-            class="full-width text-weight-bold"
-            @click="abrirDialogoTrato(oferta)"
+          :label="esMiOferta(oferta) ? 'PUBLICADA POR TI' : 'COMPRAR'"
+          :color="esMiOferta(oferta) ? 'grey-8' : 'amber'"
+          :text-color="esMiOferta(oferta) ? 'grey-5' : 'black'"
+          :disable="esMiOferta(oferta)"
+          class="full-width text-weight-bold"
+          @click="abrirDialogoTrato(oferta)"
           />
         </q-card>
       </div>
@@ -211,9 +212,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const ofertas = ref([])
 const monedas = ref([])
 const cargando = ref(true)
@@ -270,6 +273,10 @@ function limpiarFiltros() {
   filtroOrigen.value = null
   filtroDestino.value = null
   ordenarPor.value = 'Mejor tasa'
+}
+
+function esMiOferta(oferta) {
+  return oferta.usuarioId === authStore.usuario?.id
 }
 
 const dialogoAbierto = ref(false)

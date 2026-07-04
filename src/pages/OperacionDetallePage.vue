@@ -36,12 +36,15 @@
           {{ mensaje }}
         </q-banner>
 
+        <!-- Acciones del comprador -->
+        <template v-if="esComprador">
         <q-btn
           class="full-width q-py-sm text-weight-bold q-mt-md q-mb-sm"
           color="positive"
           label="Ya realicé el pago"
           @click="$router.push('/comprobante?operacion=' + operacion.id)"
         />
+
         <div class="row q-gutter-sm">
           <q-btn
             class="col q-py-sm text-weight-bold"
@@ -50,15 +53,23 @@
             label="Cancelar"
             :loading="cancelando"
             @click="cancelar"
-          />
-          <q-btn
-            class="col q-py-sm text-weight-bold"
-            color="grey-7"
-            outline
-            label="Disputa"
-            @click="$router.push('/disputa?operacion=' + operacion.id)"
-          />
-        </div>
+        />
+    <q-btn
+      class="col q-py-sm text-weight-bold"
+      color="grey-7"
+      outline
+      label="Disputa"
+      @click="$router.push('/disputa?operacion=' + operacion.id)"
+    />
+  </div>
+</template>
+
+<!-- Vista del vendedor -->
+<template v-else>
+  <q-banner class="bg-grey-9 text-white q-mt-md rounded-borders">
+    Esperando que el comprador realice el pago...
+  </q-banner>
+</template>
       </template>
 
       <!-- ===== PAGO ENVIADO ===== -->
@@ -244,7 +255,13 @@ const segundosRestantes = ref(0)
 let intervaloCountdown = null
 let intervaloSync = null
 
-const esVendedor = computed(() => operacion.value && auth.usuario.id === operacion.value.vendedorId)
+const esComprador = computed(() =>
+  operacion.value && auth.usuario.id === operacion.value.compradorId
+)
+
+const esVendedor = computed(() =>
+  operacion.value && auth.usuario.id === operacion.value.vendedorId
+)
 
 const contraparte = computed(() => {
   if (!operacion.value) return ''

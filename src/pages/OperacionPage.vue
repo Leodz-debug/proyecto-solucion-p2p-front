@@ -48,12 +48,13 @@
             <div class="row q-col-gutter-sm q-mt-md">
               <div class="col-6">
                 <q-btn
-                  class="full-width"
-                  color="amber"
-                  text-color="black"
-                  label="Comprobante"
-                  @click="$router.push('/comprobante?operacion=' + op.id)"
-                />
+                   class="full-width"
+                   color="amber"
+                    text-color="black"
+                    label="Comprobante"
+                   :disable="!puedeAbrirComprobante(op)"
+                   @click="abrirComprobante(op)"
+                  />
               </div>
 
               <div class="col-6">
@@ -117,8 +118,10 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
+import { useRouter } from 'vue-router'
 
 const auth = useAuthStore()
+const router = useRouter()
 const operaciones = ref([])
 const cargando = ref(true)
 
@@ -152,6 +155,26 @@ function formatearSegundos(s) {
     .padStart(2, '0')
   const seg = (total % 60).toString().padStart(2, '0')
   return `${min}:${seg}`
+}
+function abrirComprobante(op) {
+  // Si soy el comprador, voy a subir el comprobante
+  if (op.compradorId === auth.usuario.id) {
+    router.push('/comprobante?operacion=' + op.id)
+    return
+  }
+
+  // Si soy el vendedor, voy a revisar el comprobante
+  router.push('/operacion/' + op.id)
+}
+
+function puedeAbrirComprobante(op) {
+  // El comprador siempre puede entrar
+  if (op.compradorId === auth.usuario.id) {
+    return true
+  }
+
+  // El vendedor solamente cuando el pago fue enviado
+  return op.estado === 'Pago enviado'
 }
 </script>
 
