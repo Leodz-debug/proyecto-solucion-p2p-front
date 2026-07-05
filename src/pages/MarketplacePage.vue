@@ -78,40 +78,72 @@
     <div v-else class="row q-col-gutter-md">
       <div v-for="oferta in ofertasFiltradas" :key="oferta.id" class="col-12 col-md-6 col-lg-4">
         <q-card class="oferta-card q-pa-md">
-          <div class="row items-center q-mb-md">
-            <q-avatar color="amber" text-color="black" size="38px">V</q-avatar>
+       <div class="row items-center q-mb-md">
+  <q-avatar color="amber" text-color="black" size="42px">
+    {{ (oferta.nombreVendedor || 'V').charAt(0).toUpperCase() }}
+  </q-avatar>
 
-            <div class="q-ml-sm">
-              <div class="text-white text-weight-bold">Vendedor #{{ oferta.usuarioId }}</div>
-              <div class="text-amber text-caption">
-                <q-icon name="star" size="14px" /> Reputación
-              </div>
+  <div class="q-ml-md">
+    <div class="text-white text-weight-bold text-subtitle1">
+      {{ oferta.nombreVendedor || `Vendedor #${oferta.usuarioId}` }}
+    </div>
+
+    <div class="text-amber text-caption">
+      <q-icon name="star" size="14px" />
+      Sin calificación
+    </div>
+  </div>
+
+  <q-space />
+
+  <q-badge
+    :color="oferta.tipoOperacion === 'Venta' ? 'green' : 'deep-orange'"
+    class="q-pa-sm"
+  >
+    {{ oferta.tipoOperacion }}
+  </q-badge>
+</div>
+
+          <div class="tasa-box q-pa-md q-mb-md text-center">
+
+            <div class="text-grey-5 text-caption">
+              Tipo de cambio
             </div>
 
-            <q-space />
+            <div class="text-h5 text-amber text-weight-bold">
+              {{ oferta.tasaCambio }}
+            </div>
 
-            <q-badge
-              :color="oferta.tipoOperacion === 'Venta' ? 'green-9' : 'blue-9'"
-              class="q-pa-sm"
-            >
-              {{ oferta.tipoOperacion }}
-            </q-badge>
-          </div>
+            <div class="text-caption text-grey-5">
+              {{ oferta.monedaOrigenNombre }}
+              →
+              {{ oferta.monedaDestinoNombre }}
+            </div>
 
-          <div class="tasa-box q-pa-sm q-mb-md text-center">
-            <div class="text-grey-5 text-caption">Tipo de cambio</div>
-            <div class="text-h6 text-amber text-weight-bold">{{ oferta.tasaCambio }}</div>
           </div>
 
           <div class="row justify-between text-grey-4 q-mb-xs">
             <span>Disponible:</span>
-            <span class="text-white">{{ oferta.montoDisponible ?? '—' }}</span>
+
+            <span class="text-white text-weight-bold">
+                {{ oferta.montoDisponible ?? '—' }}
+                {{ oferta.monedaOrigenNombre }}
+            </span>
           </div>
 
           <div class="row justify-between text-grey-4 q-mb-xs">
-            <span>Límites:</span>
-            <span class="text-white">{{ oferta.montoMinimo }} - {{ oferta.montoMaximo }}</span>
-          </div>
+      <span>Límites:</span>
+
+  <div class="text-right">
+    <div class="text-white">
+      Min: {{ oferta.montoMinimo }}
+    </div>
+
+    <div class="text-white">
+      Máx: {{ oferta.montoMaximo }}
+    </div>
+  </div>
+</div>
 
           <div class="row justify-between text-grey-4 q-mb-md">
             <span>Estado:</span>
@@ -283,18 +315,24 @@ onMounted(cargarDatos)
 .panel {
   background: #161b22;
   border: 1px solid #30363d;
-  border-radius: 12px;
+  border-radius: 16px;
+  box-shadow:0 4px 18px rgba(0,0,0,.35);
 }
 
 .oferta-card {
+  transition:.25s;
   background: #161b22;
   border: 1px solid #30363d;
-  border-radius: 12px;
+  border-radius: 16px;
   transition: border 0.2s;
+  box-shadow:0 4px 18px rgba(0,0,0,.35);
 }
 
 .oferta-card:hover {
   border: 1px solid #f2c037;
+  transform: translateY(-4px);
+
+box-shadow:0 8px 22px rgba(242,192,55,.18);
 }
 
 .tasa-box {

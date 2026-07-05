@@ -75,29 +75,22 @@ async function guardar() {
   }
 
   try {
-    await api.post('/disputa', {
+    await api.post('/disputa/abrir', {
       operacionId: operacionId,
-
       motivo: motivo.value,
-
-      estado: 'Pendiente',
-
-      resolucion: null,
-
-      fechaRegistro: new Date().toISOString(),
     })
 
     ok.value = true
 
-    mensaje.value = 'Disputa registrada.'
+    mensaje.value = 'Disputa registrada. La operación quedó congelada hasta su resolución.'
 
     setTimeout(() => {
       router.push('/operacion')
-    }, 1200)
-  } catch {
+    }, 1500)
+  } catch (e) {
     ok.value = false
 
-    mensaje.value = 'No fue posible registrar.'
+    mensaje.value = e.response?.data?.mensaje || 'No fue posible registrar la disputa.'
   }
 
   loading.value = false

@@ -39,6 +39,7 @@ const routes = [
       { path: 'operacion', component: () => import('../pages/OperacionPage.vue') },
       { path: 'mis-ofertas', component: () => import('../pages/MisOfertasPage.vue') },
       { path: 'metodos-pago', component: () => import('../pages/MetodosPagoPage.vue') },
+      { path: 'operacion/:id', component: () => import('../pages/OperacionDetallePage.vue') },
       { path: 'comprobante', component: () => import('../pages/ComprobantePage.vue') },
       { path: 'calificacion', component: () => import('../pages/CalificacionPage.vue') },
       { path: 'disputa', component: () => import('../pages/DisputaPage.vue') },

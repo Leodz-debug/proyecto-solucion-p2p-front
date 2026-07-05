@@ -49,13 +49,18 @@
           <!-- Botón de Notificaciones-->
           <q-btn dense flat round icon="notifications" color="grey-4">
             <q-badge
-              v-if="!auth.esAdmin && auth.usuario?.estadoVerificacion === 'Pendiente'"
+              v-if="
+              (!auth.esAdmin && auth.usuario?.estadoVerificacion === 'Pendiente') ||
+              notificacionesNoLeidas > 0
+              "
               color="red"
               floating
               rounded
-            />
+            >
+              {{ notificacionesNoLeidas > 0 ? notificacionesNoLeidas : '' }}
+          </q-badge>
 
-            <q-menu anchor="bottom right" self="top right" style="width: 320px">
+            <q-menu anchor="bottom right" self="top right" style="width: 340px" @show="marcarVistas">
               <q-list separator>
                 <q-item v-if="!auth.esAdmin && auth.usuario?.estadoVerificacion === 'Pendiente'">
                   <q-item-section avatar>
@@ -72,24 +77,34 @@
                   </q-item-section>
                 </q-item>
 
-                <q-item v-if="auth.usuario?.estadoVerificacion === 'Verificado'">
+                <q-item
+                  v-for="n in notificaciones"
+                  :key="n.id"
+                  clickable
+                  v-close-popup
+                  @click="irANotificacion(n)"
+                >
                   <q-item-section avatar>
-                    <q-icon color="green" name="verified" />
+                    <q-icon :color="n.leida ? 'grey-6' : 'amber'" name="notifications" />
                   </q-item-section>
-
                   <q-item-section>
-                    <q-item-label> Tu cuenta ya fue verificada. </q-item-label>
+                    <q-item-label :class="n.leida ? 'text-grey-5' : 'text-weight-bold'">
+                      {{ n.titulo }}
+                    </q-item-label>
+                    <q-item-label caption>{{ n.mensaje }}</q-item-label>
                   </q-item-section>
                 </q-item>
 
                 <q-item
                   v-if="
-                    auth.esAdmin ||
-                    (auth.usuario?.estadoVerificacion !== 'Pendiente' &&
-                      auth.usuario?.estadoVerificacion !== 'Verificado')
-                  "
-                >
-                  <q-item-section> No tienes notificaciones. </q-item-section>
+                    notificaciones.length === 0 &&
+                    (
+                      auth.esAdmin ||
+                      auth.usuario?.estadoVerificacion !== 'Pendiente'
+                    )
+                      "
+                  >
+                  <q-item-section>No tienes notificaciones.</q-item-section>
                 </q-item>
               </q-list>
             </q-menu>
@@ -222,9 +237,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import api from '@/services/api'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -241,6 +257,7 @@ const inicialUsuario = computed(() => {
 const estadoUsuario = computed(() => {
   return auth.usuario?.estadoVerificacion || 'Pendiente'
 })
+
 const estadoCuenta = computed(() => {
   if (auth.esAdmin) {
     return {
@@ -283,6 +300,49 @@ const estadoCuenta = computed(() => {
   }
 })
 
+const notificaciones = ref([])
+
+const notificacionesNoLeidas = computed(() => {
+  return notificaciones.value.filter((n) => !n.leida).length
+})
+
+let intervaloNotificaciones = null
+
+async function cargarNotificaciones() {
+  if (!auth.usuario) return
+
+  try {
+    const res = await api.get('/notificacion')
+
+    notificaciones.value = res.data
+      .filter((n) => Number(n.usuarioId) === Number(auth.usuario.id))
+      .sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion))
+      .slice(0, 15)
+  } catch {
+    // Si falla, no rompemos el layout.
+  }
+}
+
+async function marcarVistas() {
+  const noLeidas = notificaciones.value.filter((n) => !n.leida)
+
+  for (const n of noLeidas) {
+    n.leida = true
+
+    try {
+      await api.put(`/notificacion/${n.id}`, { ...n, leida: true })
+    } catch {
+      // Si falla, se reintentará en la siguiente carga.
+    }
+  }
+}
+
+function irANotificacion(n) {
+  if (n.operacionId) {
+    router.push('/operacion/' + n.operacionId)
+  }
+}
+
 const menuItems = computed(() =>
   [
     { title: 'Inicio', icon: 'home', route: '/seleccion' },
@@ -301,6 +361,15 @@ function cerrarSesion() {
   auth.logout()
   router.push('/login')
 }
+
+onMounted(() => {
+  cargarNotificaciones()
+  intervaloNotificaciones = setInterval(cargarNotificaciones, 15000)
+})
+
+onUnmounted(() => {
+  if (intervaloNotificaciones) clearInterval(intervaloNotificaciones)
+})
 </script>
 
 <style scoped>
