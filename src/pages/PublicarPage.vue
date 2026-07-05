@@ -15,6 +15,15 @@
         <q-card class="panel q-pa-lg">
           <div class="text-h6 text-weight-bold text-white q-mb-md">Publicar oferta</div>
 
+          <q-banner
+            v-if="!auth.puedeOperar"
+            dense
+            class="bg-orange-9 text-white rounded-borders q-mb-md"
+          >
+            Tu cuenta todavía está pendiente de verificación. Puedes revisar el marketplace, pero no
+            publicar ofertas hasta que el administrador apruebe tu cuenta.
+          </q-banner>
+
           <div class="row q-col-gutter-md">
             <div class="col-6">
               <div class="text-grey-5 text-caption q-mb-xs">Moneda que vendo</div>
@@ -30,6 +39,7 @@
                 color="amber"
               />
             </div>
+
             <div class="col-6">
               <div class="text-grey-5 text-caption q-mb-xs">Moneda que recibo</div>
               <q-select
@@ -58,7 +68,7 @@
 
           <div class="row q-col-gutter-md q-mt-md">
             <div class="col-6">
-              <div class="text-grey-5 text-caption q-mb-xs">Monto mínimo (mínimo 10)</div>
+              <div class="text-grey-5 text-caption q-mb-xs">Monto mínimo</div>
               <q-input
                 v-model.number="montoMinimo"
                 type="number"
@@ -68,6 +78,7 @@
                 color="amber"
               />
             </div>
+
             <div class="col-6">
               <div class="text-grey-5 text-caption q-mb-xs">Monto máximo</div>
               <q-input
@@ -91,22 +102,103 @@
             color="amber"
           />
 
-          <div class="text-grey-5 text-caption q-mb-xs q-mt-md">Método de pago</div>
+          <q-separator dark class="q-my-lg" />
+
+          <div class="text-white text-subtitle2 text-weight-bold q-mb-xs">
+            Métodos de pago que aceptas
+          </div>
+
+          <div class="text-grey-5 text-caption q-mb-sm">
+            El comprador solo podrá iniciar la operación usando uno de estos métodos.
+          </div>
+
           <q-select
-            v-model="metodoPago"
-            :options="['Transferencia bancaria', 'Yape', 'Plin', 'PayPal']"
+            v-model="metodoPagoIds"
+            :options="metodosPago"
+            option-label="nombre"
+            option-value="id"
+            emit-value
+            map-options
+            multiple
+            use-chips
             dark
             outlined
             color="amber"
+            popup-content-class="bg-dark text-white"
+            :loading="cargandoMetodos"
+            @update:model-value="sincronizarMetodosOferta"
           />
+
+          <div
+            v-for="metodoOferta in metodosOferta"
+            :key="metodoOferta.metodoPagoId"
+            class="payment-method-card q-pa-md q-mt-md"
+          >
+            <div class="row items-center q-mb-sm">
+              <q-icon name="payments" color="amber" size="22px" class="q-mr-sm" />
+
+              <div>
+                <div class="text-white text-weight-bold">
+                  {{ metodoOferta.metodoPagoNombre }}
+                </div>
+
+                <div class="text-grey-5 text-caption">
+                  Datos que verá el comprador cuando inicie trato.
+                </div>
+              </div>
+            </div>
+
+            <div class="text-grey-5 text-caption q-mb-xs">Alias</div>
+            <q-input
+              v-model.trim="metodoOferta.alias"
+              dark
+              outlined
+              color="amber"
+              placeholder="Ejemplo: Mi Yape principal, BCP soles, PayPal personal"
+            />
+
+            <div class="text-grey-5 text-caption q-mb-xs q-mt-md">
+              {{ etiquetaDatoRecepcion(metodoOferta.metodoPagoNombre) }}
+            </div>
+
+            <q-input
+              v-model.trim="metodoOferta.datosRecepcion"
+              dark
+              outlined
+              color="amber"
+              :placeholder="placeholderDatoRecepcion(metodoOferta.metodoPagoNombre)"
+            />
+
+            <div class="text-grey-5 text-caption q-mb-xs q-mt-md">
+              Instrucciones para el comprador
+            </div>
+
+            <q-input
+              v-model.trim="metodoOferta.instrucciones"
+              type="textarea"
+              autogrow
+              dark
+              outlined
+              color="amber"
+              maxlength="500"
+              counter
+              placeholder="Ejemplo: Yapea exactamente el monto de la operación y coloca el código del trato en la descripción."
+            />
+          </div>
+
+          <q-banner dense class="bg-blue-grey-10 text-grey-4 q-mt-md rounded-borders">
+            En el marketplace solo se verán los métodos como etiquetas. Tus datos completos se
+            mostrarán cuando un comprador inicie una operación.
+          </q-banner>
 
           <q-banner
             v-if="mensaje"
             dense
             class="q-mt-md rounded-borders"
             :class="exito ? 'bg-green-9 text-white' : 'bg-red-9 text-white'"
-            >{{ mensaje }}</q-banner
           >
+            {{ mensaje }}
+          </q-banner>
 
           <q-btn
             label="Publicar oferta"
@@ -114,6 +206,7 @@
             text-color="black"
             class="full-width text-weight-bold q-mt-md q-py-sm"
             :loading="cargando"
+            :disable="!auth.puedeOperar"
             @click="publicar"
           />
         </q-card>
@@ -125,11 +218,15 @@
             <q-icon name="info" color="amber" size="22px" class="q-mr-sm" />
             <span class="text-white text-weight-bold">Importante</span>
           </div>
-          <div class="text-grey-4 q-mb-sm">• Tu oferta será visible para todos los usuarios</div>
+
+          <div class="text-grey-4 q-mb-sm">• Tu oferta será visible para otros usuarios.</div>
           <div class="text-grey-4 q-mb-sm">
-            • Asegúrate de tener los fondos disponibles antes de publicar
+            • Solo podrán comprar usando los métodos que aceptaste.
           </div>
-          <div class="text-grey-4">• El tiempo de respuesta debe ser menor a 15 minutos</div>
+          <div class="text-grey-4 q-mb-sm">• No guardes CVV ni número completo de tarjeta.</div>
+          <div class="text-grey-4">
+            • El comprador subirá comprobante después de pagar por fuera de la plataforma.
+          </div>
         </q-card>
       </div>
     </div>
@@ -152,7 +249,12 @@ const tasaCambio = ref(null)
 const montoMinimo = ref(10)
 const montoMaximo = ref(null)
 const montoDisponible = ref(null)
-const metodoPago = ref(null)
+
+const metodosPago = ref([])
+const metodoPagoIds = ref([])
+const metodosOferta = ref([])
+const cargandoMetodos = ref(false)
+
 const mensaje = ref('')
 const exito = ref(false)
 const cargando = ref(false)
@@ -162,54 +264,203 @@ async function cargarMonedas() {
     const res = await api.get('/moneda')
     monedas.value = res.data
   } catch {
-    console.error('Error al cargar monedas')
+    mensaje.value = 'No se pudieron cargar las monedas.'
+    exito.value = false
   }
+}
+
+async function cargarMetodosPago() {
+  cargandoMetodos.value = true
+
+  try {
+    const res = await api.get('/metodopago')
+    metodosPago.value = res.data.filter((m) => m.activo !== false)
+  } catch {
+    mensaje.value = 'No se pudieron cargar los métodos de pago.'
+    exito.value = false
+  } finally {
+    cargandoMetodos.value = false
+  }
+}
+
+function sincronizarMetodosOferta(idsSeleccionados) {
+  const anteriores = [...metodosOferta.value]
+
+  metodosOferta.value = idsSeleccionados.map((id) => {
+    const existente = anteriores.find((m) => m.metodoPagoId === id)
+
+    if (existente) return existente
+
+    const metodo = metodosPago.value.find((m) => m.id === id)
+
+    return {
+      metodoPagoId: id,
+      metodoPagoNombre: metodo?.nombre || 'Método de pago',
+      alias: metodo?.nombre || '',
+      datosRecepcion: '',
+      instrucciones: '',
+    }
+  })
+}
+
+function normalizarTexto(valor) {
+  return String(valor || '').toLowerCase()
+}
+
+function etiquetaDatoRecepcion(nombreMetodo) {
+  const nombre = normalizarTexto(nombreMetodo)
+
+  if (nombre.includes('yape') || nombre.includes('plin')) {
+    return 'Número celular donde recibirás el pago'
+  }
+
+  if (nombre.includes('transferencia') || nombre.includes('banco')) {
+    return 'Cuenta bancaria o CCI donde recibirás el pago'
+  }
+
+  if (nombre.includes('paypal')) {
+    return 'Correo PayPal donde recibirás el pago'
+  }
+
+  if (nombre.includes('tarjeta')) {
+    return 'Referencia de tarjeta o últimos 4 dígitos'
+  }
+
+  return 'Datos para recibir el pago'
+}
+
+function placeholderDatoRecepcion(nombreMetodo) {
+  const nombre = normalizarTexto(nombreMetodo)
+
+  if (nombre.includes('yape') || nombre.includes('plin')) {
+    return 'Ejemplo: 987654321'
+  }
+
+  if (nombre.includes('transferencia') || nombre.includes('banco')) {
+    return 'Ejemplo: BCP 191-00000000-0-00 / CCI 002...'
+  }
+
+  if (nombre.includes('paypal')) {
+    return 'Ejemplo: correo@paypal.com'
+  }
+
+  if (nombre.includes('tarjeta')) {
+    return 'Ejemplo: Visa terminada en 1234'
+  }
+
+  return 'Escribe tus datos de recepción'
+}
+
+function crearResumenPublico(metodoOferta) {
+  const dato = metodoOferta.datosRecepcion || ''
+
+  if (dato.length <= 4) {
+    return `${metodoOferta.metodoPagoNombre}: ${dato}`
+  }
+
+  return `${metodoOferta.metodoPagoNombre}: ****${dato.slice(-4)}`
+}
+
+function validarFormulario() {
+  if (!auth.puedeOperar) {
+    return 'Tu cuenta debe estar verificada antes de publicar ofertas.'
+  }
+
+  if (!monedaOrigen.value || !monedaDestino.value) {
+    return 'Selecciona la moneda que vendes y la moneda que recibes.'
+  }
+
+  if (monedaOrigen.value === monedaDestino.value) {
+    return 'La moneda que vendes y la moneda que recibes deben ser diferentes.'
+  }
+
+  if (!tasaCambio.value || tasaCambio.value <= 0) {
+    return 'La tasa de cambio debe ser mayor a 0.'
+  }
+
+  if (!montoMinimo.value || montoMinimo.value < 10) {
+    return 'El monto mínimo debe ser al menos 10.'
+  }
+
+  if (!montoMaximo.value || montoMaximo.value <= montoMinimo.value) {
+    return 'El monto máximo debe ser mayor al monto mínimo.'
+  }
+
+  if (!montoDisponible.value || montoDisponible.value < montoMinimo.value) {
+    return 'El monto disponible debe ser mayor o igual al monto mínimo.'
+  }
+
+  if (metodosOferta.value.length === 0) {
+    return 'Selecciona al menos un método de pago.'
+  }
+
+  const incompleto = metodosOferta.value.find(
+    (m) => !m.alias || !m.datosRecepcion || !m.instrucciones,
+  )
+
+  if (incompleto) {
+    return `Completa alias, datos e instrucciones para ${incompleto.metodoPagoNombre}.`
+  }
+
+  return ''
 }
 
 async function publicar() {
   mensaje.value = ''
+  exito.value = false
 
-  // Validaciones
-  if (
-    tasaCambio.value <= 0 ||
-    montoMinimo.value < 10 ||
-    (montoMaximo.value !== null && montoMaximo.value <= montoMinimo.value)
-  ) {
-    exito.value = false
-    mensaje.value = 'Revisa los montos: Mínimo 10, máximo mayor al mínimo, y tasa positiva.'
+  const error = validarFormulario()
+
+  if (error) {
+    mensaje.value = error
     return
   }
 
   cargando.value = true
+
   try {
-    // Enviamos los campos que tu DTO (OfertaDto) espera en C#
     await api.post('/oferta', {
       usuarioId: auth.usuario.id,
       monedaOrigenId: monedaOrigen.value,
       monedaDestinoId: monedaDestino.value,
-      monedaOrigenNombre: '', // Requerido por el DTO
-      monedaDestinoNombre: '', // Requerido por el DTO
+      monedaOrigenNombre: '',
+      monedaDestinoNombre: '',
       tipoOperacion: 'Venta',
       tasaCambio: tasaCambio.value,
       montoMinimo: montoMinimo.value,
       montoMaximo: montoMaximo.value,
       montoDisponible: montoDisponible.value,
-      metodoPago: metodoPago.value,
       estado: 'Activa',
-      fechaCreacion: new Date().toISOString(), // Requerido por el DTO
+      fechaCreacion: new Date().toISOString(),
+
+      metodoPagoIds: metodoPagoIds.value,
+
+      metodosPago: metodosOferta.value.map((m) => ({
+        metodoPagoId: m.metodoPagoId,
+        metodoPagoNombre: m.metodoPagoNombre,
+        alias: m.alias,
+        datosRecepcion: m.datosRecepcion,
+        instrucciones: m.instrucciones,
+        resumenPublico: crearResumenPublico(m),
+      })),
     })
+
     exito.value = true
     mensaje.value = 'Oferta publicada con éxito.'
+
     setTimeout(() => router.push('/marketplace'), 1200)
-  } catch {
+  } catch (e) {
     exito.value = false
-    mensaje.value = 'Error al publicar la oferta.'
+    mensaje.value = e.response?.data?.mensaje || 'Error al publicar la oferta.'
   } finally {
     cargando.value = false
   }
 }
 
-onMounted(cargarMonedas)
+onMounted(() => {
+  cargarMonedas()
+  cargarMetodosPago()
+})
 </script>
 
 <style scoped>
@@ -217,8 +468,15 @@ onMounted(cargarMonedas)
   background: #0d1117;
   min-height: 100vh;
 }
+
 .panel {
   background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+}
+
+.payment-method-card {
+  background: #0d1117;
   border: 1px solid #30363d;
   border-radius: 12px;
 }

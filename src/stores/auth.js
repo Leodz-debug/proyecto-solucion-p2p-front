@@ -10,6 +10,9 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     estaLogueado: (state) => !!state.token,
     esAdmin: (state) => state.usuario?.rol === 'Administrador',
+    estaVerificado: (state) => state.usuario?.estadoVerificacion === 'Verificado',
+    puedeOperar: (state) =>
+      state.usuario?.rol === 'Administrador' || state.usuario?.estadoVerificacion === 'Verificado',
   },
 
   actions: {
