@@ -49,17 +49,20 @@
           <!-- Botón de Notificaciones-->
           <q-btn dense flat round icon="notifications" color="grey-4">
             <q-badge
-              v-if="auth.usuario?.estadoVerificacion === 'Pendiente' || notificacionesNoLeidas > 0"
+              v-if="
+              (!auth.esAdmin && auth.usuario?.estadoVerificacion === 'Pendiente') ||
+              notificacionesNoLeidas > 0
+              "
               color="red"
               floating
               rounded
             >
               {{ notificacionesNoLeidas > 0 ? notificacionesNoLeidas : '' }}
-            </q-badge>
+          </q-badge>
 
             <q-menu anchor="bottom right" self="top right" style="width: 340px" @show="marcarVistas">
               <q-list separator>
-                <q-item v-if="auth.usuario?.estadoVerificacion === 'Pendiente'">
+                <q-item v-if="!auth.esAdmin && auth.usuario?.estadoVerificacion === 'Pendiente'">
                   <q-item-section avatar>
                     <q-icon color="orange" name="warning" />
                   </q-item-section>
@@ -92,30 +95,92 @@
                   </q-item-section>
                 </q-item>
 
-                <q-item v-if="notificaciones.length === 0 && auth.usuario?.estadoVerificacion !== 'Pendiente'">
-                  <q-item-section> No tienes notificaciones. </q-item-section>
+                <q-item
+                  v-if="
+                    notificaciones.length === 0 &&
+                    (
+                      auth.esAdmin ||
+                      auth.usuario?.estadoVerificacion !== 'Pendiente'
+                    )
+                      "
+                  >
+                  <q-item-section>No tienes notificaciones.</q-item-section>
                 </q-item>
               </q-list>
             </q-menu>
           </q-btn>
 
           <!-- Avatar con menú desplegable (logout) -->
-          <div class="row items-center q-gutter-sm cursor-pointer">
-            <q-avatar size="32px" color="amber" text-color="black" class="text-weight-bold">
-              {{ nombreAvatar }}
+          <!-- Avatar con menú desplegable -->
+          <q-btn flat no-caps class="user-menu-btn q-px-sm">
+            <q-avatar color="amber" text-color="black" size="40px" class="q-mr-sm">
+              {{ inicialUsuario }}
             </q-avatar>
-            <span class="text-white text-weight-medium gt-xs">{{ nombreCompleto }}</span>
-            <q-icon name="expand_more" color="grey-4" class="gt-xs" />
 
-            <q-menu dark>
-              <q-list style="min-width: 150px">
+            <div class="text-white text-weight-bold gt-xs">
+              {{ nombreUsuario }}
+            </div>
+
+            <q-icon name="keyboard_arrow_down" color="white" size="20px" class="q-ml-xs" />
+
+            <q-menu anchor="bottom right" self="top right" class="user-dropdown" :offset="[0, 8]">
+              <q-list style="min-width: 230px">
+                <q-item class="user-dropdown-header">
+                  <q-item-section avatar>
+                    <q-avatar color="amber" text-color="black">
+                      {{ inicialUsuario }}
+                    </q-avatar>
+                  </q-item-section>
+
+                  <q-item-section>
+                    <q-item-label class="text-white text-weight-bold">
+                      {{ nombreUsuario }}
+                    </q-item-label>
+
+                    <q-item-label caption class="text-grey-5">
+                      {{ auth.esAdmin ? 'Administrador' : estadoUsuario }}
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-separator dark />
+
+                <q-item clickable v-close-popup @click="$router.push('/mis-ofertas')">
+                  <q-item-section avatar>
+                    <q-icon name="storefront" color="amber" />
+                  </q-item-section>
+
+                  <q-item-section>
+                    <q-item-label>Mis ofertas</q-item-label>
+                    <q-item-label caption>Historial de anuncios publicados</q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-item clickable v-close-popup @click="$router.push('/metodos-pago')">
+                  <q-item-section avatar>
+                    <q-icon name="payments" color="amber" />
+                  </q-item-section>
+
+                  <q-item-section>
+                    <q-item-label>Métodos de pago</q-item-label>
+                    <q-item-label caption>Datos guardados para operar</q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-separator dark />
+
                 <q-item clickable v-close-popup @click="cerrarSesion">
-                  <q-item-section avatar><q-icon name="logout" color="red-4" /></q-item-section>
-                  <q-item-section class="text-red-4">Cerrar sesión</q-item-section>
+                  <q-item-section avatar>
+                    <q-icon name="logout" color="red-4" />
+                  </q-item-section>
+
+                  <q-item-section>
+                    <q-item-label class="text-red-4">Cerrar sesión</q-item-label>
+                  </q-item-section>
                 </q-item>
               </q-list>
             </q-menu>
-          </div>
+          </q-btn>
         </div>
       </q-toolbar>
     </q-header>
@@ -146,15 +211,18 @@
         </q-item>
       </q-list>
 
-      <!-- Estado Verificado abajo -->
+      <!-- Estado de cuenta abajo -->
       <div class="absolute-bottom q-pa-md">
         <div class="verified-card q-pa-sm row items-center q-gutter-sm">
-          <q-icon name="verified" color="green" size="24px" />
+          <q-icon :name="estadoCuenta.icono" :color="estadoCuenta.color" size="24px" />
 
           <div>
-            <div class="text-green text-weight-bold text-caption">{{ estadoVerif }}</div>
+            <div class="text-weight-bold text-caption" :class="estadoCuenta.textClass">
+              {{ estadoCuenta.titulo }}
+            </div>
+
             <div class="text-grey-5 text-caption" style="font-size: 11px">
-              Cuenta {{ estadoVerif.toLowerCase() }}
+              {{ estadoCuenta.subtitulo }}
             </div>
           </div>
         </div>
@@ -178,56 +246,116 @@ const router = useRouter()
 const auth = useAuthStore()
 const leftDrawerOpen = ref(true)
 
-const nombreCompleto = computed(() => auth.usuario?.nombreCompleto || 'Usuario')
-const nombreAvatar = computed(() => nombreCompleto.value.charAt(0).toUpperCase())
-const estadoVerif = computed(() => auth.usuario?.estadoVerificacion || 'Pendiente')
+const nombreUsuario = computed(() => {
+  return auth.usuario?.nombreCompleto || auth.usuario?.nombre || auth.usuario?.correo || 'Usuario'
+})
+
+const inicialUsuario = computed(() => {
+  return nombreUsuario.value.charAt(0).toUpperCase()
+})
+
+const estadoUsuario = computed(() => {
+  return auth.usuario?.estadoVerificacion || 'Pendiente'
+})
+
+const estadoCuenta = computed(() => {
+  if (auth.esAdmin) {
+    return {
+      titulo: 'Administrador',
+      subtitulo: 'KYC no requerido',
+      icono: 'admin_panel_settings',
+      color: 'blue',
+      textClass: 'text-blue',
+    }
+  }
+
+  const estado = auth.usuario?.estadoVerificacion || 'Pendiente'
+
+  if (estado === 'Verificado') {
+    return {
+      titulo: 'Verificado',
+      subtitulo: 'Cuenta verificada',
+      icono: 'verified',
+      color: 'green',
+      textClass: 'text-green',
+    }
+  }
+
+  if (estado === 'Rechazado') {
+    return {
+      titulo: 'Rechazado',
+      subtitulo: 'Revisa tu verificación',
+      icono: 'cancel',
+      color: 'red',
+      textClass: 'text-red',
+    }
+  }
+
+  return {
+    titulo: 'Pendiente',
+    subtitulo: 'Cuenta pendiente',
+    icono: 'schedule',
+    color: 'orange',
+    textClass: 'text-orange',
+  }
+})
 
 const notificaciones = ref([])
-const notificacionesNoLeidas = computed(
-  () => notificaciones.value.filter((n) => !n.leida).length,
-)
+
+const notificacionesNoLeidas = computed(() => {
+  return notificaciones.value.filter((n) => !n.leida).length
+})
+
 let intervaloNotificaciones = null
 
 async function cargarNotificaciones() {
   if (!auth.usuario) return
+
   try {
     const res = await api.get('/notificacion')
+
     notificaciones.value = res.data
-      .filter((n) => n.usuarioId === auth.usuario.id)
+      .filter((n) => Number(n.usuarioId) === Number(auth.usuario.id))
       .sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion))
       .slice(0, 15)
   } catch {
-    // silencioso: si falla, simplemente no se actualizan
+    // Si falla, no rompemos el layout.
   }
 }
 
 async function marcarVistas() {
   const noLeidas = notificaciones.value.filter((n) => !n.leida)
+
   for (const n of noLeidas) {
     n.leida = true
+
     try {
       await api.put(`/notificacion/${n.id}`, { ...n, leida: true })
     } catch {
-      // si falla, se reintentará en la siguiente carga
+      // Si falla, se reintentará en la siguiente carga.
     }
   }
 }
 
 function irANotificacion(n) {
-  if (n.operacionId) router.push('/operacion/' + n.operacionId)
+  if (n.operacionId) {
+    router.push('/operacion/' + n.operacionId)
+  }
 }
 
-const menuItems = [
-  { title: 'Inicio', icon: 'home', route: '/seleccion' },
-  { title: 'Marketplace', icon: 'language', route: '/marketplace' },
-  { title: 'Publicar oferta', icon: 'attach_money', route: '/publicar' },
-  { title: 'Operación activa', icon: 'schedule', route: '/operacion' },
-  { title: 'Verificación', icon: 'verified_user', route: '/verificacion' },
-  { title: 'Comprobante', icon: 'description', route: '/comprobante' },
-  { title: 'Calificación', icon: 'star', route: '/calificacion' },
-  { title: 'Disputa', icon: 'gavel', route: '/disputa' },
-  { title: 'Chat', icon: 'chat', route: '/chat' },
-]
+const menuItems = computed(() =>
+  [
+    { title: 'Inicio', icon: 'home', route: '/seleccion' },
+    { title: 'Marketplace', icon: 'language', route: '/marketplace' },
+    { title: 'Publicar oferta', icon: 'attach_money', route: '/publicar' },
+    { title: 'Operación activa', icon: 'schedule', route: '/operacion' },
+    { title: 'Verificación', icon: 'verified_user', route: '/verificacion' },
+    { title: 'Comprobante', icon: 'description', route: '/comprobante' },
+    { title: 'Calificación', icon: 'star', route: '/calificacion' },
+    { title: 'Disputa', icon: 'gavel', route: '/disputa' },
+    { title: 'Chat', icon: 'chat', route: '/chat' },
+  ].filter((item) => !(auth.esAdmin && item.route === '/verificacion')),
+)
 
 function cerrarSesion() {
   auth.logout()
@@ -271,5 +399,26 @@ onUnmounted(() => {
   background: #0d1117;
   border: 1px solid #30363d;
   border-radius: 8px;
+}
+.user-menu-btn {
+  border-radius: 999px;
+}
+
+.user-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.user-dropdown {
+  background: #161b22;
+  color: white;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.user-dropdown-header {
+  background: #0d1117;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 </style>

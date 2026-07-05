@@ -3,10 +3,8 @@
     <div class="text-h5 text-weight-bold text-white">Marketplace</div>
     <div class="text-grey-5 q-mb-lg">Explora las ofertas disponibles y elige la mejor para ti</div>
 
-    <!-- ===== BARRA DE FILTROS ===== -->
     <q-card class="panel q-pa-md q-mb-lg">
       <div class="row q-col-gutter-md items-end">
-        <!-- Tipo -->
         <div class="col-12 col-md-3">
           <div class="text-grey-5 text-caption q-mb-xs">Tipo</div>
           <q-select
@@ -19,7 +17,6 @@
           />
         </div>
 
-        <!-- Moneda origen -->
         <div class="col-12 col-md-3">
           <div class="text-grey-5 text-caption q-mb-xs">Moneda origen</div>
           <q-select
@@ -34,7 +31,6 @@
           />
         </div>
 
-        <!-- Moneda destino -->
         <div class="col-12 col-md-3">
           <div class="text-grey-5 text-caption q-mb-xs">Moneda destino</div>
           <q-select
@@ -49,7 +45,6 @@
           />
         </div>
 
-        <!-- Ordenar -->
         <div class="col-12 col-md-3">
           <div class="text-grey-5 text-caption q-mb-xs">Ordenar por</div>
           <q-select
@@ -68,48 +63,46 @@
       </div>
     </q-card>
 
-    <!-- Contador -->
     <div class="text-grey-5 q-mb-md">{{ ofertasFiltradas.length }} oferta(s) encontrada(s)</div>
 
-    <!-- Cargando -->
     <div v-if="cargando" class="text-center q-pa-xl">
       <q-spinner color="amber" size="40px" />
       <div class="text-grey-5 q-mt-sm">Cargando ofertas...</div>
     </div>
 
-    <!-- Sin resultados -->
     <q-card v-else-if="ofertasFiltradas.length === 0" class="panel q-pa-xl text-center">
       <q-icon name="storefront" size="48px" color="grey-6" />
       <div class="text-grey-5 q-mt-md">No hay ofertas que coincidan con los filtros.</div>
     </q-card>
 
-    <!-- Lista de ofertas -->
     <div v-else class="row q-col-gutter-md">
       <div v-for="oferta in ofertasFiltradas" :key="oferta.id" class="col-12 col-md-6 col-lg-4">
         <q-card class="oferta-card q-pa-md">
-          <div class="row items-center q-mb-md">
-        <q-avatar color="amber" text-color="black" size="42px">
-          V
-        </q-avatar>
+       <div class="row items-center q-mb-md">
+  <q-avatar color="amber" text-color="black" size="42px">
+    {{ (oferta.nombreVendedor || 'V').charAt(0).toUpperCase() }}
+  </q-avatar>
 
-        <div class="q-ml-md">
-          <div class="text-white text-weight-bold text-subtitle1">
-            Vendedor #{{ oferta.usuarioId }}
-          </div>
+  <div class="q-ml-md">
+    <div class="text-white text-weight-bold text-subtitle1">
+      {{ oferta.nombreVendedor || `Vendedor #${oferta.usuarioId}` }}
+    </div>
 
-          <div class="text-amber text-caption">
-            <q-icon name="star" size="14px" />
-            Sin calificación
-          </div>
-        </div>
-            <q-space />
-            <q-badge
-              :color="oferta.tipoOperacion === 'Venta' ? 'green' : 'deep-orange'"
-              class="q-pa-sm"
-            >
-              {{ oferta.tipoOperacion }}
-            </q-badge>
-          </div>
+    <div class="text-amber text-caption">
+      <q-icon name="star" size="14px" />
+      Sin calificación
+    </div>
+  </div>
+
+  <q-space />
+
+  <q-badge
+    :color="oferta.tipoOperacion === 'Venta' ? 'green' : 'deep-orange'"
+    class="q-pa-sm"
+  >
+    {{ oferta.tipoOperacion }}
+  </q-badge>
+</div>
 
           <div class="tasa-box q-pa-md q-mb-md text-center">
 
@@ -130,90 +123,91 @@
           </div>
 
           <div class="row justify-between text-grey-4 q-mb-xs">
-            <span>Disponible:</span
-            ><span class="text-white text-weight-bold">
-              {{ oferta.montoDisponible ?? '—' }}
-              {{ oferta.monedaOrigenNombre }}
-          </span>
+            <span>Disponible:</span>
+
+            <span class="text-white text-weight-bold">
+                {{ oferta.montoDisponible ?? '—' }}
+                {{ oferta.monedaOrigenNombre }}
+            </span>
           </div>
+
           <div class="row justify-between text-grey-4 q-mb-xs">
-            <span>Límites:</span
-            ><div class="text-right">
+      <span>Límites:</span>
 
-            <div class="text-white">
-              Min: {{ oferta.montoMinimo }}
-            </div>
+  <div class="text-right">
+    <div class="text-white">
+      Min: {{ oferta.montoMinimo }}
+    </div>
 
-            <div class="text-white">
-              Máx: {{ oferta.montoMaximo }}
-            </div>
+    <div class="text-white">
+      Máx: {{ oferta.montoMaximo }}
+    </div>
+  </div>
+</div>
 
-          </div>
-          </div>
           <div class="row justify-between text-grey-4 q-mb-md">
-            <span>Estado:</span><span class="text-white">{{ oferta.estado }}</span>
+            <span>Estado:</span>
+            <span class="text-white">{{ oferta.estado }}</span>
           </div>
+
+          <div class="text-grey-5 text-caption q-mb-xs">Métodos aceptados</div>
+
+          <div v-if="obtenerMetodosOferta(oferta).length" class="q-gutter-xs q-mb-md">
+            <q-badge
+              v-for="metodo in obtenerMetodosOferta(oferta)"
+              :key="metodo.id || metodo.metodoPagoId || nombreMetodoOferta(metodo)"
+              color="blue-grey-8"
+              text-color="white"
+              class="q-pa-xs"
+            >
+              {{ nombreMetodoOferta(metodo) }}
+            </q-badge>
+          </div>
+
+          <div v-else class="text-grey-6 text-caption q-mb-md">
+            Esta oferta no tiene métodos publicados.
+          </div>
+
+          <q-banner
+            v-if="esMiOferta(oferta)"
+            dense
+            class="bg-blue-grey-10 text-grey-4 rounded-borders"
+          >
+            Esta oferta fue publicada por ti. No puedes iniciar trato contigo mismo.
+          </q-banner>
 
           <q-btn
-            label="Comprar"
+            v-else
+            label="Iniciar trato"
             color="amber"
             text-color="black"
             class="full-width text-weight-bold"
-            @click="abrirDialogoTrato(oferta)"
-          />
+            :disable="
+              !auth.puedeOperar ||
+              oferta.estado !== 'Activa' ||
+              !obtenerMetodosOferta(oferta).length
+            "
+            @click="iniciarTrato(oferta)"
+          >
+            <q-tooltip v-if="!auth.puedeOperar">
+              Debes verificar tu cuenta antes de iniciar un trato.
+            </q-tooltip>
+          </q-btn>
         </q-card>
       </div>
     </div>
-
-    <!-- ===== DIÁLOGO: confirmar monto e iniciar trato ===== -->
-    <q-dialog v-model="dialogoAbierto">
-      <q-card class="panel q-pa-lg" style="min-width: 320px">
-        <div class="text-h6 text-white q-mb-sm">Confirmar trato</div>
-        <div class="text-grey-5 q-mb-md">
-          Tasa: <span class="text-amber">{{ ofertaSeleccionada?.tasaCambio }}</span> · Límites:
-          {{ ofertaSeleccionada?.montoMinimo }} - {{ ofertaSeleccionada?.montoMaximo }}
-        </div>
-
-        <q-input
-          v-model.number="montoTrato"
-          type="number"
-          label="Monto a operar"
-          dark
-          outlined
-          color="amber"
-          :rules="[
-            (v) => v > 0 || 'Ingresa un monto',
-            (v) => v >= ofertaSeleccionada?.montoMinimo || 'Monto menor al mínimo permitido',
-            (v) => v <= ofertaSeleccionada?.montoMaximo || 'Monto mayor al máximo permitido',
-          ]"
-        />
-
-        <q-banner v-if="errorDialogo" dense class="bg-red-9 text-white q-mt-md rounded-borders">
-          {{ errorDialogo }}
-        </q-banner>
-
-        <div class="row q-gutter-sm q-mt-lg">
-          <q-btn flat color="grey-5" label="Cancelar" v-close-popup class="col" />
-          <q-btn
-            color="amber"
-            text-color="black"
-            label="Confirmar"
-            class="col text-weight-bold"
-            :loading="iniciando"
-            @click="confirmarTrato"
-          />
-        </div>
-      </q-card>
-    </q-dialog>
   </q-page>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
 
 const router = useRouter()
+const auth = useAuthStore()
+
 const ofertas = ref([])
 const monedas = ref([])
 const cargando = ref(true)
@@ -228,28 +222,17 @@ const opcionesMoneda = computed(() => [
   ...monedas.value.map((m) => ({ label: m.codigo + ' - ' + m.nombre, value: m.id })),
 ])
 
-async function cargarDatos() {
-  cargando.value = true
-  try {
-    const [resOfertas, resMonedas] = await Promise.all([api.get('/oferta'), api.get('/moneda')])
-    ofertas.value = resOfertas.data
-    monedas.value = resMonedas.data
-  } catch (e) {
-    console.error('Error al cargar datos:', e)
-  } finally {
-    cargando.value = false
-  }
-}
-
 const ofertasFiltradas = computed(() => {
   let lista = [...ofertas.value]
 
   if (filtroTipo.value !== 'Todas') {
     lista = lista.filter((o) => o.tipoOperacion === filtroTipo.value)
   }
+
   if (filtroOrigen.value !== null) {
     lista = lista.filter((o) => o.monedaOrigenId === filtroOrigen.value)
   }
+
   if (filtroDestino.value !== null) {
     lista = lista.filter((o) => o.monedaDestinoId === filtroDestino.value)
   }
@@ -265,6 +248,20 @@ const ofertasFiltradas = computed(() => {
   return lista
 })
 
+async function cargarDatos() {
+  cargando.value = true
+
+  try {
+    const [resOfertas, resMonedas] = await Promise.all([api.get('/oferta'), api.get('/moneda')])
+    ofertas.value = resOfertas.data
+    monedas.value = resMonedas.data
+  } catch (e) {
+    console.error('Error al cargar datos:', e)
+  } finally {
+    cargando.value = false
+  }
+}
+
 function limpiarFiltros() {
   filtroTipo.value = 'Todas'
   filtroOrigen.value = null
@@ -272,44 +269,38 @@ function limpiarFiltros() {
   ordenarPor.value = 'Mejor tasa'
 }
 
-const dialogoAbierto = ref(false)
-const ofertaSeleccionada = ref(null)
-const montoTrato = ref(0)
-const iniciando = ref(false)
-const errorDialogo = ref('')
-
-function abrirDialogoTrato(oferta) {
-  ofertaSeleccionada.value = oferta
-  montoTrato.value = oferta.montoMinimo
-  errorDialogo.value = ''
-  dialogoAbierto.value = true
+function esMiOferta(oferta) {
+  return Number(oferta?.usuarioId) === Number(auth.usuario?.id)
 }
 
-async function confirmarTrato() {
-  errorDialogo.value = ''
-  const oferta = ofertaSeleccionada.value
-  if (
-    !montoTrato.value ||
-    montoTrato.value < oferta.montoMinimo ||
-    montoTrato.value > oferta.montoMaximo
-  ) {
-    errorDialogo.value = `El monto debe estar entre ${oferta.montoMinimo} y ${oferta.montoMaximo}.`
-    return
+function obtenerMetodosOferta(oferta) {
+  if (!oferta) return []
+
+  if (Array.isArray(oferta.metodosPago) && oferta.metodosPago.length > 0) {
+    return oferta.metodosPago
   }
 
-  iniciando.value = true
-  try {
-    const res = await api.post('/operacion/iniciar-trato', {
-      ofertaId: oferta.id,
-      monto: montoTrato.value,
-    })
-    dialogoAbierto.value = false
-    router.push('/operacion/' + res.data.id)
-  } catch (e) {
-    errorDialogo.value = e.response?.data?.mensaje || 'No se pudo iniciar el trato.'
-  } finally {
-    iniciando.value = false
+  if (oferta.metodoPago) {
+    return [
+      {
+        id: null,
+        metodoPagoId: null,
+        metodoPagoNombre: oferta.metodoPago,
+      },
+    ]
   }
+
+  return []
+}
+
+function nombreMetodoOferta(metodo) {
+  return (
+    metodo?.metodoPagoNombre || metodo?.nombre || metodo?.metodoPago?.nombre || 'Método de pago'
+  )
+}
+
+function iniciarTrato(oferta) {
+  router.push('/operacion?oferta=' + oferta.id)
 }
 
 onMounted(cargarDatos)
@@ -320,12 +311,14 @@ onMounted(cargarDatos)
   background: #0d1117;
   min-height: 100vh;
 }
+
 .panel {
   background: #161b22;
   border: 1px solid #30363d;
   border-radius: 16px;
   box-shadow:0 4px 18px rgba(0,0,0,.35);
 }
+
 .oferta-card {
   transition:.25s;
   background: #161b22;
@@ -334,12 +327,14 @@ onMounted(cargarDatos)
   transition: border 0.2s;
   box-shadow:0 4px 18px rgba(0,0,0,.35);
 }
+
 .oferta-card:hover {
   border: 1px solid #f2c037;
   transform: translateY(-4px);
 
 box-shadow:0 8px 22px rgba(242,192,55,.18);
 }
+
 .tasa-box {
   background: #0d1117;
   border: 1px solid #30363d;
