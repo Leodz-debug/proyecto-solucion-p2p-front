@@ -29,7 +29,7 @@
               <div class="text-grey-5 text-caption q-mb-xs">Moneda que vendo</div>
               <q-select
                 v-model="monedaOrigen"
-                :options="monedas"
+                :options="monedasOrigen"
                 option-label="codigo"
                 option-value="id"
                 emit-value
@@ -44,7 +44,7 @@
               <div class="text-grey-5 text-caption q-mb-xs">Moneda que recibo</div>
               <q-select
                 v-model="monedaDestino"
-                :options="monedas"
+                :options="monedasDestino"
                 option-label="codigo"
                 option-value="id"
                 emit-value
@@ -56,11 +56,24 @@
             </div>
           </div>
 
-          <div class="text-grey-5 text-caption q-mb-xs q-mt-md">Tasa de cambio</div>
+          <div class="row justify-between items-center q-mb-xs">
+  <div class="text-grey-5">
+    Tasa de cambio
+  </div>
+
+  <div
+    v-if="monedaOrigen && monedaDestino && tasaMercado"
+    class="text-caption text-green"
+  >
+    Tasa actual del mercado:
+    <strong>{{ tasaMercado.toFixed(4) }}</strong>
+  </div>
+</div>
           <q-input
             v-model.number="tasaCambio"
             type="number"
-            placeholder="3.75"
+            step="0.01"
+            min="0"
             dark
             outlined
             color="amber"
@@ -234,7 +247,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
@@ -243,8 +256,18 @@ const router = useRouter()
 const auth = useAuthStore()
 
 const monedas = ref([])
+
+const monedasOrigen = computed(() => {
+  return monedas.value.filter((m) => m.id !== monedaDestino.value)
+})
+
+const monedasDestino = computed(() => {
+  return monedas.value.filter((m) => m.id !== monedaOrigen.value)
+})
+
 const monedaOrigen = ref(null)
 const monedaDestino = ref(null)
+const tasaMercado = ref(null)
 const tasaCambio = ref(null)
 const montoMinimo = ref(10)
 const montoMaximo = ref(null)
@@ -281,6 +304,36 @@ async function cargarMetodosPago() {
   } finally {
     cargandoMetodos.value = false
   }
+}
+
+async function actualizarTasaCambio() {
+  if (!monedaOrigen.value || !monedaDestino.value) return
+
+  if (monedaOrigen.value === monedaDestino.value) {
+    tasaMercado.value = 1
+    tasaCambio.value = 1
+    return
+  }
+
+  const origen = monedas.value.find((m) => m.id === monedaOrigen.value)
+  const destino = monedas.value.find((m) => m.id === monedaDestino.value)
+
+  if (!origen || !destino) return
+
+  try {
+  const res = await fetch(
+    `https://open.er-api.com/v6/latest/${origen.codigo}`
+  )
+
+  const data = await res.json()
+
+  if (data.result === 'success') {
+    tasaMercado.value = Number(data.rates[destino.codigo].toFixed(4))
+    tasaCambio.value = tasaMercado.value
+  }
+} catch (error) {
+  console.error('Error obteniendo tasa:', error)
+}
 }
 
 function sincronizarMetodosOferta(idsSeleccionados) {
@@ -456,6 +509,10 @@ async function publicar() {
     cargando.value = false
   }
 }
+
+watch([monedaOrigen, monedaDestino], () => {
+  actualizarTasaCambio()
+})
 
 onMounted(() => {
   cargarMonedas()
