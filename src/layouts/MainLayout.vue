@@ -350,7 +350,6 @@ const menuItems = computed(() =>
     { title: 'Publicar oferta', icon: 'attach_money', route: '/publicar' },
     { title: 'Operación activa', icon: 'schedule', route: '/operacion' },
     { title: 'Verificación', icon: 'verified_user', route: '/verificacion' },
-    { title: 'Comprobante', icon: 'description', route: '/comprobante' },
     { title: 'Calificación', icon: 'star', route: '/calificacion' },
     { title: 'Disputa', icon: 'gavel', route: '/disputa' },
     { title: 'Chat', icon: 'chat', route: '/chat' },

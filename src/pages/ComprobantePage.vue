@@ -40,6 +40,7 @@
         @click="guardar"
       />
     </q-card>
+    
   </q-page>
 </template>
 
