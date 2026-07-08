@@ -2,7 +2,6 @@
   <q-layout view="lHh Lpr lFf" class="bg-dark-custom">
     <q-header elevated class="bg-header q-px-md">
       <q-toolbar class="row justify-between items-center q-py-xs">
-        <!-- Logo Izquierda -->
         <div
           class="row items-center q-gutter-xs cursor-pointer"
           @click="$router.push('/seleccion')"
@@ -45,22 +44,26 @@
           />
         </div>
 
-        <div class="row items-center q-gutter-md">
-          <!-- Botón de Notificaciones-->
+        <div class="row items-center q-gutter-sm">
           <q-btn dense flat round icon="notifications" color="grey-4">
             <q-badge
               v-if="
-              (!auth.esAdmin && auth.usuario?.estadoVerificacion === 'Pendiente') ||
-              notificacionesNoLeidas > 0
+                (!auth.esAdmin && auth.usuario?.estadoVerificacion === 'Pendiente') ||
+                notificacionesNoLeidas > 0
               "
               color="red"
               floating
               rounded
             >
               {{ notificacionesNoLeidas > 0 ? notificacionesNoLeidas : '' }}
-          </q-badge>
+            </q-badge>
 
-            <q-menu anchor="bottom right" self="top right" style="width: 340px" @show="marcarVistas">
+            <q-menu
+              anchor="bottom right"
+              self="top right"
+              style="width: 340px"
+              @show="marcarVistas"
+            >
               <q-list separator>
                 <q-item v-if="!auth.esAdmin && auth.usuario?.estadoVerificacion === 'Pendiente'">
                   <q-item-section avatar>
@@ -68,7 +71,7 @@
                   </q-item-section>
 
                   <q-item-section>
-                    <q-item-label class="text-weight-bold"> Verificación pendiente </q-item-label>
+                    <q-item-label class="text-weight-bold">Verificación pendiente</q-item-label>
 
                     <q-item-label caption>
                       Tu identidad aún no ha sido aprobada. Algunas funciones estarán deshabilitadas
@@ -98,100 +101,147 @@
                 <q-item
                   v-if="
                     notificaciones.length === 0 &&
-                    (
-                      auth.esAdmin ||
-                      auth.usuario?.estadoVerificacion !== 'Pendiente'
-                    )
-                      "
-                  >
+                    (auth.esAdmin || auth.usuario?.estadoVerificacion !== 'Pendiente')
+                  "
+                >
                   <q-item-section>No tienes notificaciones.</q-item-section>
                 </q-item>
               </q-list>
             </q-menu>
           </q-btn>
 
-          <!-- Avatar con menú desplegable (logout) -->
-          <!-- Avatar con menú desplegable -->
           <q-btn flat no-caps class="user-menu-btn q-px-sm">
-            <q-avatar color="amber" text-color="black" size="40px" class="q-mr-sm">
+            <q-avatar color="amber" text-color="black" size="42px" class="q-mr-sm avatar-shadow">
               {{ inicialUsuario }}
             </q-avatar>
 
-            <div class="text-white text-weight-bold gt-xs">
-              {{ nombreUsuario }}
+            <div class="user-menu-trigger gt-xs">
+              <div class="user-menu-trigger__name">
+                {{ nombreUsuario }}
+              </div>
+
+              <div class="user-menu-trigger__status">
+                {{ auth.esAdmin ? 'Administrador' : estadoUsuario }}
+              </div>
             </div>
 
             <q-icon name="keyboard_arrow_down" color="white" size="20px" class="q-ml-xs" />
 
-            <q-menu anchor="bottom right" self="top right" class="user-dropdown" :offset="[0, 8]">
-              <q-list style="min-width: 230px">
-                <q-item class="user-dropdown-header">
-                  <q-item-section avatar>
-                    <q-avatar color="amber" text-color="black">
+            <q-menu
+              anchor="bottom right"
+              self="top right"
+              :offset="[0, 10]"
+              content-class="user-dropdown"
+            >
+              <div class="user-dropdown-panel">
+                <div class="user-dropdown-header">
+                  <div class="row items-center no-wrap q-gutter-sm">
+                    <q-avatar color="amber" text-color="black" size="50px" class="avatar-shadow">
                       {{ inicialUsuario }}
                     </q-avatar>
-                  </q-item-section>
 
-                  <q-item-section>
-                    <q-item-label class="text-white text-weight-bold">
-                      {{ nombreUsuario }}
-                    </q-item-label>
+                    <div class="col">
+                      <div class="user-dropdown-name">
+                        {{ nombreUsuario }}
+                      </div>
 
-                    <q-item-label caption class="text-grey-5">
-                      {{ auth.esAdmin ? 'Administrador' : estadoUsuario }}
-                    </q-item-label>
-                  </q-item-section>
-                </q-item>
+                      <div class="user-dropdown-subtitle">
+                        {{ auth.esAdmin ? 'Administrador del sistema' : 'Cuenta personal' }}
+                      </div>
 
-                <q-separator dark />
+                      <div class="user-status-chip q-mt-xs">
+                        <q-icon
+                          :name="estadoCuenta.icono"
+                          :color="estadoCuenta.color"
+                          size="16px"
+                          class="q-mr-xs"
+                        />
+                        <span>{{ auth.esAdmin ? 'Administrador' : estadoUsuario }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-                <q-item clickable v-close-popup @click="$router.push('/mis-ofertas')">
-                  <q-item-section avatar>
-                    <q-icon name="storefront" color="amber" />
-                  </q-item-section>
+                <div class="user-dropdown-body">
+                  <q-list class="dropdown-list" padding>
+                    <q-item
+                      clickable
+                      v-close-popup
+                      class="dropdown-link"
+                      @click="$router.push('/mis-ofertas')"
+                    >
+                      <q-item-section avatar>
+                        <div class="dropdown-icon-box">
+                          <q-icon name="storefront" color="amber" />
+                        </div>
+                      </q-item-section>
 
-                  <q-item-section>
-                    <q-item-label>Mis ofertas</q-item-label>
-                    <q-item-label caption>Historial de anuncios publicados</q-item-label>
-                  </q-item-section>
-                </q-item>
+                      <q-item-section>
+                        <q-item-label class="dropdown-title">Mis ofertas</q-item-label>
+                        <q-item-label caption class="dropdown-caption">
+                          Historial de anuncios publicados
+                        </q-item-label>
+                      </q-item-section>
+                    </q-item>
 
-                <q-item clickable v-close-popup @click="$router.push('/metodos-pago')">
-                  <q-item-section avatar>
-                    <q-icon name="payments" color="amber" />
-                  </q-item-section>
+                    <q-item
+                      clickable
+                      v-close-popup
+                      class="dropdown-link"
+                      @click="$router.push('/metodos-pago')"
+                    >
+                      <q-item-section avatar>
+                        <div class="dropdown-icon-box">
+                          <q-icon name="payments" color="amber" />
+                        </div>
+                      </q-item-section>
 
-                  <q-item-section>
-                    <q-item-label>Métodos de pago</q-item-label>
-                    <q-item-label caption>Datos guardados para operar</q-item-label>
-                  </q-item-section>
-                </q-item>
+                      <q-item-section>
+                        <q-item-label class="dropdown-title">Métodos de pago</q-item-label>
+                        <q-item-label caption class="dropdown-caption">
+                          Datos guardados para operar
+                        </q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </div>
 
-                <q-separator dark />
+                <div class="user-dropdown-footer">
+                  <q-list padding>
+                    <q-item
+                      clickable
+                      v-close-popup
+                      class="dropdown-link logout-link"
+                      @click="cerrarSesion"
+                    >
+                      <q-item-section avatar>
+                        <div class="dropdown-icon-box logout-icon-box">
+                          <q-icon name="logout" color="red-4" />
+                        </div>
+                      </q-item-section>
 
-                <q-item clickable v-close-popup @click="cerrarSesion">
-                  <q-item-section avatar>
-                    <q-icon name="logout" color="red-4" />
-                  </q-item-section>
-
-                  <q-item-section>
-                    <q-item-label class="text-red-4">Cerrar sesión</q-item-label>
-                  </q-item-section>
-                </q-item>
-              </q-list>
+                      <q-item-section>
+                        <q-item-label class="dropdown-title text-red-4">Cerrar sesión</q-item-label>
+                        <q-item-label caption class="dropdown-caption">
+                          Salir de tu cuenta actual
+                        </q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </div>
+              </div>
             </q-menu>
           </q-btn>
         </div>
       </q-toolbar>
     </q-header>
 
-    <!-- 2. MENÚ LATERAL IZQUIERDO -->
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered class="bg-dark">
       <q-list class="q-px-sm q-pt-md">
         <q-item
-          clickable
           v-for="(item, index) in menuItems"
           :key="index"
+          clickable
           :active="$route.path === item.route"
           active-class="menu-active-item"
           class="menu-item q-mb-sm rounded-borders"
@@ -200,6 +250,7 @@
           <q-item-section avatar min-width="40px">
             <q-icon :name="item.icon" :color="$route.path === item.route ? 'amber' : 'grey-4'" />
           </q-item-section>
+
           <q-item-section>
             <q-item-label
               class="text-weight-medium"
@@ -211,7 +262,6 @@
         </q-item>
       </q-list>
 
-      <!-- Estado de cuenta abajo -->
       <div class="absolute-bottom q-pa-md">
         <div class="verified-card q-pa-sm row items-center q-gutter-sm">
           <q-icon :name="estadoCuenta.icono" :color="estadoCuenta.color" size="24px" />
@@ -229,7 +279,6 @@
       </div>
     </q-drawer>
 
-    <!-- 3. CONTENEDOR PRINCIPAL -->
     <q-page-container>
       <router-view />
     </q-page-container>
@@ -375,49 +424,172 @@ onUnmounted(() => {
 .bg-dark-custom {
   background: #0d1117;
 }
+
 .bg-header {
   background: #161b22;
   border-bottom: 1px solid #30363d;
 }
+
 .bg-sidebar {
   background: #161b22;
   border-right: 1px solid #30363d;
 }
+
 .menu-item {
   color: #c9d1d9;
   transition: all 0.2s ease;
 }
+
 .menu-item:hover {
   background: rgba(242, 192, 55, 0.05);
 }
+
 .menu-active-item {
   background: rgba(242, 192, 55, 0.1) !important;
   border-left: 3px solid #f2c037;
 }
+
 .verified-card {
   background: #0d1117;
   border: 1px solid #30363d;
   border-radius: 8px;
 }
+
 .user-menu-btn {
   border-radius: 999px;
+  min-height: 52px;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .user-menu-btn:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 
+.user-menu-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+
+.user-menu-trigger__name {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.user-menu-trigger__status {
+  color: #8b949e;
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.avatar-shadow {
+  box-shadow: 0 6px 18px rgba(242, 192, 55, 0.16);
+}
+
 .user-dropdown {
-  background: #161b22;
-  color: white;
+  min-width: 310px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.user-dropdown-panel {
+  background: linear-gradient(180deg, #161b22 0%, #11161d 100%);
+  color: #e6edf3;
   border: 1px solid #30363d;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.35);
 }
 
 .user-dropdown-header {
-  background: #0d1117;
-  padding-top: 12px;
-  padding-bottom: 12px;
+  background:
+    radial-gradient(circle at top right, rgba(242, 192, 55, 0.14), transparent 38%), #0f141b;
+  padding: 16px;
+  border-bottom: 1px solid #2a313a;
+}
+
+.user-dropdown-name {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.user-dropdown-subtitle {
+  color: #8b949e;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.user-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #d0d7de;
+  border: 1px solid #30363d;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.user-dropdown-body {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.user-dropdown-footer {
+  border-top: 1px solid #2a313a;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.dropdown-list {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.dropdown-link {
+  border-radius: 12px;
+  margin: 4px 10px;
+  min-height: 62px;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.dropdown-link:hover {
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateX(2px);
+}
+
+.dropdown-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(242, 192, 55, 0.1);
+  border: 1px solid rgba(242, 192, 55, 0.18);
+}
+
+.logout-icon-box {
+  background: rgba(248, 81, 73, 0.08);
+  border-color: rgba(248, 81, 73, 0.22);
+}
+
+.dropdown-title {
+  color: #f0f6fc;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.dropdown-caption {
+  color: #8b949e !important;
+  font-size: 12px;
 }
 </style>
