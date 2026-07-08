@@ -136,18 +136,46 @@
               </div>
             </div>
 
-            <q-btn
-              flat
-              round
-              dense
-              icon="visibility"
-              color="grey-5"
-              size="sm"
-              @click="abrirPerfil(oferta)"
-            >
-              <q-tooltip>Ver información del vendedor</q-tooltip>
-            </q-btn>
-          </div>
+<div class="text-amber text-caption row items-center">
+  <q-icon name="star" size="14px" class="q-mr-xs" />
+
+  <template v-if="Number(oferta.calificacionPromedio) > 0">
+    <span class="text-weight-bold">
+      {{ Number(oferta.calificacionPromedio).toFixed(1) }}
+    </span>
+
+    <span class="text-grey-5 q-ml-xs">
+      ({{ oferta.cantidadCalificaciones || 0 }})
+    </span>
+  </template>
+
+  <span v-else class="text-grey-5">
+    Sin calificación
+  </span>
+</div>
+</div>
+
+<q-space />
+
+<q-btn
+  flat
+  round
+  dense
+  icon="visibility"
+  color="grey-5"
+  size="sm"
+  @click="abrirPerfil(oferta)"
+>
+  <q-tooltip>Ver información del vendedor</q-tooltip>
+</q-btn>
+
+<q-badge
+  :color="oferta.tipoOperacion === 'Venta' ? 'green' : 'deep-orange'"
+  class="q-pa-sm"
+>
+  {{ oferta.tipoOperacion }}
+</q-badge>
+</div>
 
           <div class="row items-center justify-between q-mb-md">
             <q-badge
