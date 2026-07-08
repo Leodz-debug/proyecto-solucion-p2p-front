@@ -121,9 +121,11 @@
                     size="15px"
                     color="amber"
                   />
+
                   <span class="text-amber text-caption text-weight-bold">
                     {{ formatearDecimal(reputacionDeOferta(oferta).calificacionPromedio, 1) }}
                   </span>
+
                   <span class="text-grey-5 text-caption">
                     ({{ reputacionDeOferta(oferta).cantidadCalificaciones }})
                   </span>
@@ -136,46 +138,18 @@
               </div>
             </div>
 
-<div class="text-amber text-caption row items-center">
-  <q-icon name="star" size="14px" class="q-mr-xs" />
-
-  <template v-if="Number(oferta.calificacionPromedio) > 0">
-    <span class="text-weight-bold">
-      {{ Number(oferta.calificacionPromedio).toFixed(1) }}
-    </span>
-
-    <span class="text-grey-5 q-ml-xs">
-      ({{ oferta.cantidadCalificaciones || 0 }})
-    </span>
-  </template>
-
-  <span v-else class="text-grey-5">
-    Sin calificación
-  </span>
-</div>
-</div>
-
-<q-space />
-
-<q-btn
-  flat
-  round
-  dense
-  icon="visibility"
-  color="grey-5"
-  size="sm"
-  @click="abrirPerfil(oferta)"
->
-  <q-tooltip>Ver información del vendedor</q-tooltip>
-</q-btn>
-
-<q-badge
-  :color="oferta.tipoOperacion === 'Venta' ? 'green' : 'deep-orange'"
-  class="q-pa-sm"
->
-  {{ oferta.tipoOperacion }}
-</q-badge>
-</div>
+            <q-btn
+              flat
+              round
+              dense
+              icon="visibility"
+              color="grey-5"
+              size="sm"
+              @click="abrirPerfil(oferta)"
+            >
+              <q-tooltip>Ver información del vendedor</q-tooltip>
+            </q-btn>
+          </div>
 
           <div class="row items-center justify-between q-mb-md">
             <q-badge
@@ -192,9 +166,11 @@
 
           <div class="tasa-box q-pa-md q-mb-md text-center">
             <div class="text-grey-5 text-caption">Tipo de cambio</div>
+
             <div class="text-h5 text-amber text-weight-bold">
               {{ formatearDecimal(oferta.tasaCambio, 4) }}
             </div>
+
             <div class="text-caption text-grey-5">
               {{ oferta.monedaOrigenNombre }} → {{ oferta.monedaDestinoNombre }}
             </div>
@@ -204,6 +180,7 @@
             <div class="col-4">
               <div class="mini-stat q-pa-sm text-center">
                 <div class="text-caption text-grey-5">Éxito</div>
+
                 <div class="text-white text-weight-bold">
                   {{ textoTasaExito(reputacionDeOferta(oferta)) }}
                 </div>
@@ -213,6 +190,7 @@
             <div class="col-4">
               <div class="mini-stat q-pa-sm text-center">
                 <div class="text-caption text-grey-5">Promedio</div>
+
                 <div class="text-white text-weight-bold">
                   {{ textoTiempoPromedio(reputacionDeOferta(oferta)) }}
                 </div>
@@ -222,6 +200,7 @@
             <div class="col-4">
               <div class="mini-stat q-pa-sm text-center">
                 <div class="text-caption text-grey-5">Completadas</div>
+
                 <div class="text-white text-weight-bold">
                   {{ reputacionDeOferta(oferta)?.operacionesCompletadas ?? '—' }}
                 </div>
@@ -231,6 +210,7 @@
 
           <div class="row justify-between text-grey-4 q-mb-xs">
             <span>Disponible:</span>
+
             <span class="text-white text-weight-bold text-right">
               {{ formatearMonto(oferta.montoDisponible) }} {{ oferta.monedaOrigenNombre }}
             </span>
@@ -238,6 +218,7 @@
 
           <div class="row justify-between text-grey-4 q-mb-xs">
             <span>Límites:</span>
+
             <span class="text-white text-right">
               {{ formatearMonto(oferta.montoMinimo) }} - {{ formatearMonto(oferta.montoMaximo) }}
             </span>
@@ -282,9 +263,11 @@
             <q-tooltip v-if="!auth.puedeOperar">
               Debes verificar tu cuenta antes de iniciar un trato.
             </q-tooltip>
+
             <q-tooltip v-else-if="oferta.estado !== 'Activa'">
               Esta oferta ya no está activa.
             </q-tooltip>
+
             <q-tooltip v-else-if="!obtenerMetodosOferta(oferta).length">
               Esta oferta no tiene métodos de pago publicados.
             </q-tooltip>
