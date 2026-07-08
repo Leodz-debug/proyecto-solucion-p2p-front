@@ -96,6 +96,20 @@
 
   <q-space />
 
+  <q-btn
+    flat
+    round
+    dense
+    icon="visibility"
+    color="grey-7"
+    size="sm"
+    @click="abrirPerfil(oferta)"
+  >
+    <q-tooltip>
+      Ver información del vendedor
+    </q-tooltip>
+  </q-btn>
+
   <q-badge
     :color="oferta.tipoOperacion === 'Venta' ? 'green' : 'deep-orange'"
     class="q-pa-sm"
@@ -196,6 +210,386 @@
         </q-card>
       </div>
     </div>
+
+    <!-- Modal Perfil del Vendedor -->
+
+<q-dialog
+  v-model="mostrarPerfil"
+  transition-show="scale"
+  transition-hide="scale"
+>
+
+<q-card
+  class="perfil-card"
+  style="width: 760px; max-width: 95vw;"
+>
+
+  <q-card-section class="row items-center q-pa-lg">
+
+    <q-avatar
+      size="72px"
+      color="amber"
+      text-color="black"
+      class="shadow-2"
+    >
+      {{ vendedorSeleccionado?.nombreVendedor?.charAt(0).toUpperCase() || 'V' }}
+    </q-avatar>
+
+    <div class="q-ml-md">
+
+      <div class="text-h5 text-weight-bold text-white">
+        {{ vendedorSeleccionado?.nombreVendedor }}
+      </div>
+
+      <div class="row items-center q-gutter-sm q-mt-xs">
+
+        <q-badge
+          color="positive"
+          rounded
+          label="Cuenta verificada"
+        />
+
+
+
+      </div>
+
+      <div class="row items-center q-mt-sm">
+
+  <div class="row items-center q-mt-sm">
+
+    <q-icon
+      name="star"
+      color="amber"
+      size="20px"
+    />
+
+    <span class="text-amber q-ml-sm">
+
+      Sin calificación
+
+    </span>
+
+  </div>
+
+      </div>
+
+    </div>
+
+  </q-card-section>
+
+  <q-separator dark />
+
+<q-card-section>
+
+  <!-- Información -->
+
+  <div class="text-subtitle1 text-weight-bold text-white q-mb-md">
+    <q-icon name="info" color="amber" class="q-mr-sm"/>
+    Información
+  </div>
+
+  <div class="row q-col-gutter-md q-mb-lg">
+
+    <div class="col-12 col-sm-4">
+
+      <q-card flat bordered class="info-card">
+
+        <q-card-section class="text-center">
+
+          <div class="text-caption text-grey-5">
+            Operaciones
+          </div>
+
+          <div class="text-grey">
+            No disponible
+          </div>
+
+        </q-card-section>
+
+      </q-card>
+
+    </div>
+
+    <div class="col-12 col-sm-4">
+
+      <q-card flat bordered class="info-card">
+
+        <q-card-section class="text-center">
+
+          <div class="text-caption text-grey-5">
+            Tasa de éxito
+          </div>
+
+          <div class="text-grey">
+            No disponible
+          </div>
+
+        </q-card-section>
+
+      </q-card>
+
+    </div>
+
+    <div class="col-12 col-sm-4">
+
+      <q-card flat bordered class="info-card">
+
+        <q-card-section class="text-center">
+
+          <div class="text-caption text-grey-5">
+            Tiempo respuesta
+          </div>
+
+          <div class="text-grey">
+            No disponible
+          </div>
+
+        </q-card-section>
+
+      </q-card>
+
+    </div>
+
+  </div>
+
+  <!-- Métodos -->
+
+  <div class="text-subtitle1 text-weight-bold text-white q-mb-md">
+    <q-icon name="account_balance_wallet" color="amber" class="q-mr-sm"/>
+    Métodos de pago
+  </div>
+
+  <div class="q-gutter-xs q-mb-lg">
+
+    <q-badge
+      v-for="metodo in obtenerMetodosOferta(vendedorSeleccionado)"
+      :key="nombreMetodoOferta(metodo)"
+      color="blue-grey-8"
+      text-color="white"
+    >
+      {{ nombreMetodoOferta(metodo) }}
+    </q-badge>
+
+  </div>
+
+  <!-- Cambio -->
+
+  <div class="text-subtitle1 text-weight-bold text-white q-mb-md">
+
+    <q-icon name="currency_exchange" color="amber" class="q-mr-sm"/>
+
+    Cambio disponible
+      <div class="row items-center q-mb-lg">
+
+    <q-badge color="amber" text-color="black">
+
+      {{ vendedorSeleccionado?.monedaOrigenNombre }}
+
+    </q-badge>
+
+    <q-icon
+      name="arrow_forward"
+      color="grey-5"
+      class="q-mx-sm"
+    />
+
+    <q-badge color="amber" text-color="black">
+
+      {{ vendedorSeleccionado?.monedaDestinoNombre }}
+
+    </q-badge>
+
+  </div>
+    <!-- Resumen de la oferta -->
+
+<div class="text-subtitle1 text-weight-bold text-white q-mb-md">
+
+  <q-icon
+    name="receipt_long"
+    color="amber"
+    class="q-mr-sm"
+  />
+
+  Resumen de la oferta
+
+</div>
+
+<div class="row q-col-gutter-md q-mb-lg">
+
+
+
+  <div class="col-12 col-md-4">
+
+    <q-card flat bordered class="info-card">
+
+      <q-card-section class="text-center">
+
+        <div class="text-caption text-grey-5">
+
+          Tipo de cambio
+
+        </div>
+
+        <div class="text-weight-bold text-amber">
+
+          {{ vendedorSeleccionado?.tasaCambio }}
+
+        </div>
+
+      </q-card-section>
+
+    </q-card>
+
+  </div>
+
+  <div class="col-12 col-md-4">
+
+    <q-card flat bordered class="info-card">
+
+      <q-card-section class="text-center">
+
+        <div class="text-caption text-grey-5">
+
+          Disponible
+
+        </div>
+
+        <div class="text-weight-bold text-white">
+
+          {{ vendedorSeleccionado?.montoDisponible }}
+
+        </div>
+
+        <div class="text-caption text-grey-5 q-mt-xs">
+
+          {{ vendedorSeleccionado?.monedaOrigenNombre }}
+
+        </div>
+
+      </q-card-section>
+
+    </q-card>
+
+  </div>
+
+  <div class="col-12 col-md-4">
+
+    <q-card flat bordered class="info-card">
+
+      <q-card-section class="text-center">
+
+        <div class="text-caption text-grey-5">
+
+          Límites
+
+        </div>
+
+        <div class="text-white">
+
+          {{ vendedorSeleccionado?.montoMinimo }}
+
+          -
+
+          {{ vendedorSeleccionado?.montoMaximo }}
+
+        </div>
+
+        <div class="text-caption text-grey-5 q-mt-xs">
+
+          {{ vendedorSeleccionado?.monedaOrigenNombre }}
+
+        </div>
+
+      </q-card-section>
+
+    </q-card>
+
+  </div>
+
+</div>
+
+  </div>
+
+
+
+  <!-- Calificaciones -->
+
+  <div class="text-subtitle1 text-weight-bold text-white q-mb-md">
+
+    <q-icon name="star" color="amber" class="q-mr-sm"/>
+
+    Calificaciones
+
+  </div>
+
+  <q-banner
+    dense
+    rounded
+    class="bg-blue-grey-9 text-grey-3 q-mb-lg"
+  >
+
+    Este vendedor aún no cuenta con calificaciones públicas.
+
+  </q-banner>
+
+  <!-- Seguridad -->
+
+  <div class="text-subtitle1 text-weight-bold text-white q-mb-md">
+
+    <q-icon
+      name="verified_user"
+      color="green"
+      class="q-mr-sm"
+    />
+
+    Seguridad
+
+  </div>
+
+  <q-banner
+    rounded
+    class="bg-grey-10 text-grey-3"
+  >
+
+    Todas las operaciones iniciadas desde el Marketplace se realizan
+    dentro de CambioSeguro P2P.
+
+    <br><br>
+
+    Revisa cuidadosamente el tipo de cambio,
+    los límites y el método de pago antes de iniciar un trato.
+
+  </q-banner>
+
+</q-card-section>
+
+<q-card-actions class="q-pa-md">
+
+  <q-btn
+    flat
+    color="grey-5"
+    label="Cerrar"
+    v-close-popup
+  />
+
+  <q-space />
+
+  <q-btn
+    color="amber"
+    text-color="black"
+    label="Iniciar trato"
+    @click="
+      mostrarPerfil = false;
+      iniciarTrato(vendedorSeleccionado)
+    "
+  />
+
+</q-card-actions>
+
+</q-card>
+
+    </q-dialog>
+
   </q-page>
 </template>
 
@@ -205,12 +599,21 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
 
+const abrirPerfil = (oferta) => {
+  vendedorSeleccionado.value = oferta
+  mostrarPerfil.value = true
+}
+
 const router = useRouter()
 const auth = useAuthStore()
 
 const ofertas = ref([])
 const monedas = ref([])
 const cargando = ref(true)
+
+// Dialog del perfil
+const mostrarPerfil = ref(false)
+const vendedorSeleccionado = ref(null)
 
 const filtroTipo = ref('Todas')
 const filtroOrigen = ref(null)
@@ -307,6 +710,13 @@ onMounted(cargarDatos)
 </script>
 
 <style scoped>
+
+.info-card{
+  background:#0d1117;
+  border:1px solid #30363d;
+  border-radius:12px;
+}
+
 .market-page {
   background: #0d1117;
   min-height: 100vh;
@@ -339,5 +749,27 @@ box-shadow:0 8px 22px rgba(242,192,55,.18);
   background: #0d1117;
   border: 1px solid #30363d;
   border-radius: 8px;
+}
+
+.perfil-card{
+  background:#161b22;
+  border:1px solid #30363d;
+  border-radius:18px;
+  box-shadow:0 8px 30px rgba(0,0,0,.45);
+}
+
+.info-card{
+  background:#0d1117;
+  border:1px solid #30363d;
+  border-radius:12px;
+  transition:.2s;
+}
+
+.info-card:hover{
+
+  border-color:#f2c037;
+
+  transform:translateY(-2px);
+
 }
 </style>
