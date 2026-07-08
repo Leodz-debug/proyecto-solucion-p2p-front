@@ -257,17 +257,45 @@
 
   <div class="row items-center q-mt-sm">
 
-    <q-icon
-      name="star"
-      color="amber"
-      size="20px"
-    />
 
-    <span class="text-amber q-ml-sm">
+    
+<span class="text-amber q-ml-sm">
 
-      Sin calificación
+  <template v-if="reputacionVendedor">
 
-    </span>
+<div class="row items-center q-gutter-xs">
+
+  <q-rating
+    :model-value="reputacionVendedor.calificacionPromedio"
+    readonly
+    size="18px"
+    color="amber"
+  />
+
+  <span class="text-amber text-weight-bold">
+
+    {{ reputacionVendedor.calificacionPromedio }}
+
+  </span>
+
+  <span class="text-grey-5">
+
+    ({{ reputacionVendedor.cantidadCalificaciones }}
+    {{ reputacionVendedor.cantidadCalificaciones === 1 ? 'calificación' : 'calificaciones' }})
+
+  </span>
+
+</div>
+
+  </template>
+
+  <template v-else>
+
+    Sin calificación
+
+  </template>
+
+</span>
 
   </div>
 
@@ -301,7 +329,7 @@
           </div>
 
           <div class="text-grey">
-            No disponible
+            {{ reputacionVendedor?.operacionesCompletadas ?? "No disponible" }}
           </div>
 
         </q-card-section>
@@ -321,7 +349,11 @@
           </div>
 
           <div class="text-grey">
-            No disponible
+            {{
+            reputacionVendedor
+              ? reputacionVendedor.tasaExito + "%"
+              : "No disponible"
+          }}
           </div>
 
         </q-card-section>
@@ -528,7 +560,38 @@
     class="bg-blue-grey-9 text-grey-3 q-mb-lg"
   >
 
+    <q-banner
+  dense
+  rounded
+  class="bg-blue-grey-9 text-grey-3 q-mb-lg"
+>
+
+  <template
+    v-if="
+      reputacionVendedor &&
+      reputacionVendedor.comentarios.length
+    "
+  >
+
+    <div
+      v-for="(comentario,index) in reputacionVendedor.comentarios"
+      :key="index"
+      class="q-mb-sm"
+    >
+
+      ⭐ {{ comentario }}
+
+    </div>
+
+  </template>
+
+  <template v-else>
+
     Este vendedor aún no cuenta con calificaciones públicas.
+
+  </template>
+
+</q-banner>
 
   </q-banner>
 
@@ -599,9 +662,26 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
 
-const abrirPerfil = (oferta) => {
+const abrirPerfil = async (oferta) => {
+
   vendedorSeleccionado.value = oferta
+
+  reputacionVendedor.value = null
+
+  try {
+
+    const res = await api.get(`/usuario/${oferta.usuarioId}/reputacion`)
+
+    reputacionVendedor.value = res.data
+
+  } catch (error) {
+
+    console.error("Error obteniendo reputación:", error)
+
+  }
+
   mostrarPerfil.value = true
+
 }
 
 const router = useRouter()
@@ -614,6 +694,7 @@ const cargando = ref(true)
 // Dialog del perfil
 const mostrarPerfil = ref(false)
 const vendedorSeleccionado = ref(null)
+const reputacionVendedor = ref(null)
 
 const filtroTipo = ref('Todas')
 const filtroOrigen = ref(null)
