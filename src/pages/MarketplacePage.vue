@@ -88,10 +88,37 @@
       {{ oferta.nombreVendedor || `Vendedor #${oferta.usuarioId}` }}
     </div>
 
-    <div class="text-amber text-caption">
-      <q-icon name="star" size="14px" />
-      Sin calificación
-    </div>
+<div class="text-amber text-caption row items-center">
+
+  <q-icon
+    name="star"
+    size="14px"
+    class="q-mr-xs"
+  />
+
+  <template v-if="oferta.calificacionPromedio > 0">
+
+    <span class="text-weight-bold">
+
+      {{ oferta.calificacionPromedio }}
+
+    </span>
+
+    <span class="text-grey-5 q-ml-xs">
+
+      ({{ oferta.cantidadCalificaciones }})
+
+    </span>
+
+  </template>
+
+  <span v-else>
+
+    Sin calificación
+
+  </span>
+
+</div>
   </div>
 
   <q-space />
@@ -736,9 +763,50 @@ async function cargarDatos() {
   cargando.value = true
 
   try {
-    const [resOfertas, resMonedas] = await Promise.all([api.get('/oferta'), api.get('/moneda')])
-    ofertas.value = resOfertas.data
-    monedas.value = resMonedas.data
+const [resOfertas, resMonedas] = await Promise.all([
+  api.get('/oferta'),
+  api.get('/moneda')
+])
+
+const ofertasConReputacion = await Promise.all(
+
+  resOfertas.data.map(async (oferta) => {
+
+    try {
+
+      const res = await api.get(`/usuario/${oferta.usuarioId}/reputacion`)
+
+      return {
+
+        ...oferta,
+
+        calificacionPromedio: res.data.calificacionPromedio,
+
+        cantidadCalificaciones: res.data.cantidadCalificaciones
+
+      }
+
+    } catch {
+
+      return {
+
+        ...oferta,
+
+        calificacionPromedio: 0,
+
+        cantidadCalificaciones: 0
+
+      }
+
+    }
+
+  })
+
+)
+
+ofertas.value = ofertasConReputacion
+
+monedas.value = resMonedas.data
   } catch (e) {
     console.error('Error al cargar datos:', e)
   } finally {
