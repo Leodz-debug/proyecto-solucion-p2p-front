@@ -8,6 +8,14 @@ import {
 
 import routes from './routes.js'
 
+function leerUsuarioLocal() {
+  try {
+    return JSON.parse(localStorage.getItem('usuario'))
+  } catch {
+    return null
+  }
+}
+
 export default defineRouter((/* { store, ssrContext } */) => {
   const createHistory = import.meta.env.QUASAR_SERVER
     ? createMemoryHistory
@@ -21,22 +29,36 @@ export default defineRouter((/* { store, ssrContext } */) => {
     history: createHistory(import.meta.env.QUASAR_VUE_ROUTER_BASE),
   })
 
-  // ===== GUARD: Protege y guía el flujo de la aplicación =====
   Router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('token')
+    const usuario = leerUsuarioLocal()
+    const esAdmin = usuario?.rol === 'Administrador'
+
     const necesitaLogin = to.matched.some((r) => r.meta.requiereAuth)
+    const necesitaAdmin = to.matched.some((r) => r.meta.requiereAdmin)
+    const bloqueaAdmin = to.matched.some((r) => r.meta.noAdmin)
 
     if (necesitaLogin && !token) {
-      // 1. Intenta entrar a una ruta protegida sin token -> Al Login
       next('/login')
-    } else if ((to.path === '/login' || to.path === '/registro') && token) {
-      // 2. CORRECCIÓN: Si ya está logueado e intenta ir a login/registro,
-      // lo redirigimos al inicio de tu flujo unificado, NO a la raíz antigua.
-      next('/verificacion')
-    } else {
-      // 3. De lo contrario, continúa libremente
-      next()
+      return
     }
+
+    if ((to.path === '/login' || to.path === '/registro') && token) {
+      next(esAdmin ? '/admin' : '/verificacion')
+      return
+    }
+
+    if (token && esAdmin && bloqueaAdmin) {
+      next('/admin')
+      return
+    }
+
+    if (token && necesitaAdmin && !esAdmin) {
+      next('/seleccion')
+      return
+    }
+
+    next()
   })
 
   return Router

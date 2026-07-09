@@ -2,10 +2,7 @@
   <q-layout view="lHh Lpr lFf" class="bg-dark-custom">
     <q-header elevated class="bg-header q-px-md">
       <q-toolbar class="row justify-between items-center q-py-xs">
-        <div
-          class="row items-center q-gutter-xs cursor-pointer"
-          @click="$router.push('/seleccion')"
-        >
+        <div class="row items-center q-gutter-xs cursor-pointer" @click="irInicio">
           <q-icon name="shield" size="28px" color="amber" />
           <span class="text-h6 text-weight-bold text-white">
             CambioSeguro <span class="text-amber">P2P</span>
@@ -13,29 +10,32 @@
         </div>
 
         <div class="row items-center q-gutter-md gt-xs">
+          <template v-if="!auth.esAdmin">
+            <q-btn
+              flat
+              no-caps
+              label="Inicio"
+              class="text-grey-4"
+              @click="$router.push('/seleccion')"
+            />
+            <q-btn
+              flat
+              no-caps
+              label="Marketplace"
+              class="text-grey-4"
+              @click="$router.push('/marketplace')"
+            />
+            <q-btn
+              flat
+              no-caps
+              label="Publicar oferta"
+              class="text-grey-4"
+              @click="$router.push('/publicar')"
+            />
+          </template>
+
           <q-btn
-            flat
-            no-caps
-            label="Inicio"
-            class="text-grey-4"
-            @click="$router.push('/seleccion')"
-          />
-          <q-btn
-            flat
-            no-caps
-            label="Marketplace"
-            class="text-grey-4"
-            @click="$router.push('/marketplace')"
-          />
-          <q-btn
-            flat
-            no-caps
-            label="Publicar oferta"
-            class="text-grey-4"
-            @click="$router.push('/publicar')"
-          />
-          <q-btn
-            v-if="auth.usuario?.rol === 'Administrador'"
+            v-else
             flat
             no-caps
             label="Dashboard Administrativo"
@@ -165,6 +165,7 @@
                 <div class="user-dropdown-body">
                   <q-list class="dropdown-list" padding>
                     <q-item
+                      v-if="!auth.esAdmin"
                       clickable
                       v-close-popup
                       class="dropdown-link"
@@ -185,6 +186,7 @@
                     </q-item>
 
                     <q-item
+                      v-if="!auth.esAdmin"
                       clickable
                       v-close-popup
                       class="dropdown-link"
@@ -242,19 +244,19 @@
           v-for="(item, index) in menuItems"
           :key="index"
           clickable
-          :active="$route.path === item.route"
+          :active="esMenuActivo(item)"
           active-class="menu-active-item"
           class="menu-item q-mb-sm rounded-borders"
-          @click="$router.push(item.route)"
+          @click="irMenu(item)"
         >
           <q-item-section avatar min-width="40px">
-            <q-icon :name="item.icon" :color="$route.path === item.route ? 'amber' : 'grey-4'" />
+            <q-icon :name="item.icon" :color="esMenuActivo(item) ? 'amber' : 'grey-4'" />
           </q-item-section>
 
           <q-item-section>
             <q-item-label
               class="text-weight-medium"
-              :class="$route.path === item.route ? 'text-amber' : 'text-grey-4'"
+              :class="esMenuActivo(item) ? 'text-amber' : 'text-grey-4'"
             >
               {{ item.title }}
             </q-item-label>
@@ -287,11 +289,12 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import api from '@/services/api'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
 const leftDrawerOpen = ref(true)
 
@@ -392,8 +395,19 @@ function irANotificacion(n) {
   }
 }
 
-const menuItems = computed(() =>
-  [
+const menuItems = computed(() => {
+  if (auth.esAdmin) {
+    return [
+      { title: 'Dashboard', icon: 'dashboard', route: '/admin', tab: 'resumen' },
+      { title: 'Usuarios', icon: 'people', route: '/admin', tab: 'usuarios' },
+      { title: 'Ofertas', icon: 'storefront', route: '/admin', tab: 'ofertas' },
+      { title: 'Operaciones', icon: 'receipt_long', route: '/admin', tab: 'operaciones' },
+      { title: 'Disputas', icon: 'gavel', route: '/admin', tab: 'disputas' },
+      { title: 'Reportes', icon: 'assessment', route: '/admin', tab: 'reportes' },
+    ]
+  }
+
+  return [
     { title: 'Inicio', icon: 'home', route: '/seleccion' },
     { title: 'Marketplace', icon: 'language', route: '/marketplace' },
     { title: 'Publicar oferta', icon: 'attach_money', route: '/publicar' },
@@ -402,8 +416,29 @@ const menuItems = computed(() =>
     { title: 'Calificación', icon: 'star', route: '/calificacion' },
     { title: 'Disputa', icon: 'gavel', route: '/disputa' },
     { title: 'Chat', icon: 'chat', route: '/chat' },
-  ].filter((item) => !(auth.esAdmin && item.route === '/verificacion')),
-)
+  ]
+})
+
+function irInicio() {
+  router.push(auth.esAdmin ? '/admin' : '/seleccion')
+}
+
+function irMenu(item) {
+  if (item.tab) {
+    router.push({ path: item.route, query: { tab: item.tab } })
+    return
+  }
+
+  router.push(item.route)
+}
+
+function esMenuActivo(item) {
+  if (item.tab) {
+    return route.path === item.route && (route.query.tab || 'resumen') === item.tab
+  }
+
+  return route.path === item.route
+}
 
 function cerrarSesion() {
   auth.logout()
