@@ -197,9 +197,9 @@
                       </q-item-section>
 
                       <q-item-section>
-                        <q-item-label class="dropdown-title">Métodos de pago</q-item-label>
+                        <q-item-label class="dropdown-title">Métodos de recepción</q-item-label>
                         <q-item-label caption class="dropdown-caption">
-                          Datos guardados para operar
+                          Datos guardados para vender
                         </q-item-label>
                       </q-item-section>
                     </q-item>

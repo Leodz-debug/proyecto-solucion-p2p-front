@@ -3,7 +3,45 @@
     <q-btn flat color="amber" icon="arrow_back" label="Volver" @click="$router.back()" />
 
     <div class="text-h5 text-white text-weight-bold q-mt-md">Subir comprobante</div>
-    <div class="text-grey-5 q-mb-lg">Adjunta el comprobante de tu pago para continuar</div>
+    <div class="text-grey-5 q-mb-lg">
+      Primero paga con los datos del vendedor y luego adjunta tu comprobante.
+    </div>
+
+    <q-card v-if="operacion" class="panel q-pa-lg q-mb-md">
+      <div class="row items-center q-mb-sm">
+        <q-icon name="payments" color="amber" size="24px" class="q-mr-sm" />
+        <div>
+          <div class="text-white text-subtitle1 text-weight-bold">Datos para realizar el pago</div>
+          <div class="text-grey-5 text-caption">Operación {{ operacion.codigoOperacion }}</div>
+        </div>
+      </div>
+
+      <div class="payment-detail-card q-pa-md q-mt-md">
+        <div class="detail-row">
+          <span>Método:</span>
+          <span>{{ operacion.metodoPagoNombre || '—' }}</span>
+        </div>
+
+        <div class="detail-row">
+          <span>Resumen:</span>
+          <span>{{ operacion.resumenPagoVendedor || '—' }}</span>
+        </div>
+
+        <div class="detail-row">
+          <span>Alias:</span>
+          <span>{{ operacion.aliasPagoVendedor || '—' }}</span>
+        </div>
+
+        <div class="detail-row">
+          <span>Datos de recepción:</span>
+          <span>{{ operacion.datosRecepcionVendedor || '—' }}</span>
+        </div>
+      </div>
+
+      <q-banner dense class="bg-blue-grey-10 text-grey-4 q-mt-md rounded-borders">
+        {{ instruccionesPago }}
+      </q-banner>
+    </q-card>
 
     <q-card class="panel q-pa-lg">
       <q-file
@@ -36,16 +74,15 @@
         text-color="black"
         label="Enviar comprobante"
         :loading="loading"
-        :disable="!archivo"
+        :disable="!archivo || !operacion"
         @click="guardar"
       />
     </q-card>
-    
   </q-page>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/services/api'
 
@@ -55,9 +92,16 @@ const router = useRouter()
 const operacionId = Number(route.query.operacion)
 
 const archivo = ref(null)
+const operacion = ref(null)
 const loading = ref(false)
 const mensaje = ref('')
 const ok = ref(false)
+
+const instruccionesPago = computed(
+  () =>
+    operacion.value?.instruccionesPagoVendedor ||
+    'Realiza el pago exacto con los datos mostrados. Conserva tu comprobante para que el vendedor pueda validarlo.',
+)
 
 function onRechazado() {
   ok.value = false
@@ -98,8 +142,14 @@ async function guardar() {
 }
 
 onMounted(async () => {
+  if (!operacionId) {
+    router.push('/operacion')
+    return
+  }
+
   try {
-    await api.get(`/operacion/${operacionId}`)
+    const res = await api.get(`/operacion/${operacionId}`)
+    operacion.value = res.data
   } catch {
     router.push('/operacion')
   }
@@ -111,9 +161,30 @@ onMounted(async () => {
   background: #0d1117;
   min-height: 100vh;
 }
+
 .panel {
   background: #161b22;
   border: 1px solid #30363d;
   border-radius: 12px;
+}
+
+.payment-detail-card {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: #8b949e;
+  padding: 4px 0;
+}
+
+.detail-row span:last-child {
+  color: #f0f6fc;
+  font-weight: 700;
+  text-align: right;
 }
 </style>

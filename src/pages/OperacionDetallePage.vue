@@ -290,20 +290,54 @@ import api from '@/services/api'
 const DatosOperacion = {
   props: ['operacion', 'contraparte'],
   render() {
-    return h('div', { class: 'q-mb-sm' }, [
+    const fila = (label, value) =>
       h('div', { class: 'row justify-between text-grey-4 q-mb-xs' }, [
-        h('span', 'Código de operación:'),
-        h('span', { class: 'text-white text-weight-bold' }, this.operacion.codigoOperacion),
-      ]),
-      h('div', { class: 'row justify-between text-grey-4 q-mb-xs' }, [
-        h('span', 'Monto:'),
-        h('span', { class: 'text-white' }, String(this.operacion.monto)),
-      ]),
-      h('div', { class: 'row justify-between text-grey-4 q-mb-xs' }, [
-        h('span', 'Contraparte:'),
-        h('span', { class: 'text-white' }, this.contraparte),
-      ]),
-    ])
+        h('span', label),
+        h('span', { class: 'text-white text-weight-bold text-right' }, value || '—'),
+      ])
+
+    const bloques = [
+      fila('Código de operación:', this.operacion.codigoOperacion),
+      fila('Monto:', String(this.operacion.monto ?? '—')),
+      fila('Método:', this.operacion.metodoPagoNombre),
+      fila('Contraparte:', this.contraparte),
+    ]
+
+    const hayDatosVendedor = Boolean(
+      this.operacion.aliasPagoVendedor ||
+      this.operacion.datosRecepcionVendedor ||
+      this.operacion.instruccionesPagoVendedor ||
+      this.operacion.resumenPagoVendedor,
+    )
+
+    if (hayDatosVendedor) {
+      bloques.push(
+        h('div', { class: 'payment-detail-card q-pa-md q-mt-md' }, [
+          h(
+            'div',
+            { class: 'text-white text-weight-bold q-mb-xs' },
+            'Datos del vendedor para recibir el pago',
+          ),
+          h(
+            'div',
+            { class: 'text-grey-5 text-caption q-mb-sm' },
+            'Si eres comprador, usa estos datos para pagar fuera de la plataforma. Si eres vendedor, estos son los datos que publicaste.',
+          ),
+          fila('Resumen:', this.operacion.resumenPagoVendedor),
+          fila('Alias:', this.operacion.aliasPagoVendedor),
+          fila('Datos de recepción:', this.operacion.datosRecepcionVendedor),
+          this.operacion.instruccionesPagoVendedor
+            ? h(
+                'div',
+                { class: 'text-grey-4 text-caption q-mt-sm' },
+                this.operacion.instruccionesPagoVendedor,
+              )
+            : null,
+        ]),
+      )
+    }
+
+    return h('div', { class: 'q-mb-sm' }, bloques)
   },
 }
 
@@ -539,7 +573,8 @@ onUnmounted(detenerTemporizadores)
   border: 1px solid #30363d;
   border-radius: 12px;
 }
-.comprobante-card {
+.comprobante-card,
+.payment-detail-card {
   background: #0d1117;
   border: 1px solid #30363d;
   border-radius: 10px;

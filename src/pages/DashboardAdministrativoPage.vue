@@ -1,11 +1,9 @@
 <template>
   <q-page class="admin-page q-pa-lg">
-    <!-- Título -->
     <div class="row items-center q-mb-md">
       <div>
         <div class="text-h4 text-weight-bold text-white">Dashboard Administrativo</div>
-
-        <div class="text-grey-5">Panel de administración de CambioSeguro P2P</div>
+        <div class="text-grey-5">Monitoreo general de operaciones, usuarios y reportes</div>
       </div>
 
       <q-space />
@@ -15,223 +13,427 @@
         text-color="black"
         icon="refresh"
         label="Actualizar"
+        :loading="loading"
         @click="cargarTodo"
       />
     </div>
-
-    <!-- Loading -->
 
     <div v-if="loading" class="flex flex-center" style="height: 300px">
       <q-spinner color="amber" size="60px" />
     </div>
 
     <template v-else>
-      <!-- TARJETAS -->
-
       <div class="row q-col-gutter-lg">
         <div class="col-12 col-sm-6 col-lg-3">
-          <q-card class="panel stat-card">
-            <q-card-section class="text-center">
-              <q-icon name="people" size="55px" color="amber" />
-
-              <div class="text-h3 text-white q-mt-sm">
-                {{ reporte.totalUsuarios }}
-              </div>
-
-              <div class="text-grey-5">Usuarios</div>
-            </q-card-section>
+          <q-card class="panel stat-card q-pa-md">
+            <q-icon name="verified_user" size="42px" color="green" />
+            <div class="text-h4 text-white text-weight-bold q-mt-sm">
+              {{ reporte.usuariosActivos }}
+            </div>
+            <div class="text-grey-5">Usuarios activos</div>
+            <div class="text-caption text-grey-6">
+              Total registrados: {{ reporte.totalUsuarios }}
+            </div>
           </q-card>
         </div>
 
         <div class="col-12 col-sm-6 col-lg-3">
-          <q-card class="panel stat-card">
-            <q-card-section class="text-center">
-              <q-icon name="currency_exchange" size="55px" color="green" />
-
-              <div class="text-h3 text-white q-mt-sm">
-                {{ reporte.totalOperaciones }}
-              </div>
-
-              <div class="text-grey-5">Operaciones</div>
-            </q-card-section>
+          <q-card class="panel stat-card q-pa-md">
+            <q-icon name="task_alt" size="42px" color="positive" />
+            <div class="text-h4 text-white text-weight-bold q-mt-sm">
+              {{ reporte.operacionesCompletadas }}
+            </div>
+            <div class="text-grey-5">Operaciones completadas</div>
+            <div class="text-caption text-grey-6">
+              Total operaciones: {{ reporte.totalOperaciones }}
+            </div>
           </q-card>
         </div>
 
         <div class="col-12 col-sm-6 col-lg-3">
-          <q-card class="panel stat-card">
-            <q-card-section class="text-center">
-              <q-icon name="report_problem" size="55px" color="red" />
-
-              <div class="text-h3 text-white q-mt-sm">
-                {{ reporte.totalDisputas }}
-              </div>
-
-              <div class="text-grey-5">Disputas</div>
-            </q-card-section>
+          <q-card class="panel stat-card q-pa-md">
+            <q-icon name="report_problem" size="42px" color="red" />
+            <div class="text-h4 text-white text-weight-bold q-mt-sm">
+              {{ reporte.totalDisputas }}
+            </div>
+            <div class="text-grey-5">Disputas</div>
+            <div class="text-caption text-grey-6">Casos registrados</div>
           </q-card>
         </div>
 
         <div class="col-12 col-sm-6 col-lg-3">
-          <q-card class="panel stat-card">
-            <q-card-section class="text-center">
-              <q-icon name="verified_user" size="55px" color="blue" />
-
-              <div class="text-h3 text-white q-mt-sm">
-                {{ verificacionesPendientes }}
-              </div>
-
-              <div class="text-grey-5">Pendientes</div>
-            </q-card-section>
+          <q-card class="panel stat-card q-pa-md">
+            <q-icon name="paid" size="42px" color="amber" />
+            <div class="text-h4 text-white text-weight-bold q-mt-sm">
+              {{ formatearMonto(reporte.volumenIntercambio) }}
+            </div>
+            <div class="text-grey-5">Volumen de intercambio</div>
+            <div class="text-caption text-grey-6">
+              Ofertas activas: {{ reporte.ofertasActivas }}
+            </div>
           </q-card>
         </div>
       </div>
 
-      <!-- VERIFICACIONES -->
+      <div class="row q-col-gutter-lg q-mt-sm">
+        <div class="col-12 col-lg-7">
+          <q-card class="panel q-pa-md full-height">
+            <div class="row items-center q-mb-md">
+              <q-icon name="currency_exchange" color="amber" size="24px" class="q-mr-sm" />
+              <div>
+                <div class="text-white text-h6">Monedas más usadas</div>
+                <div class="text-grey-5 text-caption">
+                  Principal: {{ reporte.monedaMasUsada || '—' }}
+                </div>
+              </div>
+            </div>
 
-      <q-card class="panel q-mt-xl">
-        <q-card-section class="row items-center">
-          <div class="text-h6 text-white">Solicitudes de Verificación</div>
-
-          <q-space />
-
-          <q-input
-            outlined
-            dense
-            dark
-            color="amber"
-            v-model="buscar"
-            placeholder="Buscar usuario..."
-            style="width: 280px"
-          >
-            <template v-slot:prepend>
-              <q-icon name="search" />
-            </template>
-          </q-input>
-        </q-card-section>
-
-        <q-separator dark />
-
-        <div class="row q-col-gutter-lg q-pa-md">
-          <div class="col-12 col-md-6 col-lg-4" v-for="v in listaFiltrada" :key="v.id">
-            <q-card class="panel usuario-card">
-              <q-card-section>
-                <div class="row items-center">
-                  <q-avatar color="amber" text-color="black" size="55px">
-                    {{ obtenerInicial(v.nombreCompleto) }}
-                  </q-avatar>
-
-                  <div class="q-ml-md">
-                    <div class="text-h6 text-white">
-                      {{ v.nombreCompleto }}
-                    </div>
-
-                    <div class="text-grey-5">
-                      {{ v.correo }}
-                    </div>
+            <div v-if="reporte.monedasMasUsadas.length" class="column q-gutter-sm">
+              <div
+                v-for="moneda in reporte.monedasMasUsadas"
+                :key="moneda.codigo || moneda.nombre"
+                class="currency-row"
+              >
+                <div>
+                  <div class="text-white text-weight-bold">
+                    {{ moneda.codigo || '—' }} · {{ moneda.nombre || 'Moneda' }}
+                  </div>
+                  <div class="text-grey-5 text-caption">
+                    {{ moneda.cantidadOperaciones }} operación(es)
                   </div>
                 </div>
-              </q-card-section>
+                <q-badge color="blue-grey-8" text-color="white">
+                  {{ formatearMonto(moneda.volumen) }}
+                </q-badge>
+              </div>
+            </div>
 
-              <q-separator dark />
-
-              <q-card-section>
-                <div class="text-grey-5">Documento</div>
-
-                <div class="text-white text-weight-medium">
-                  {{ v.tipoDocumento }}
-                </div>
-
-                <div class="text-grey-4">
-                  {{ v.documentoIdentidad }}
-                </div>
-              </q-card-section>
-
-              <q-separator dark />
-
-              <q-card-section>
-                <div class="row items-center justify-between">
-                  <q-chip
-                    :color="colorEstado(v.estadoVerificacion)"
-                    text-color="white"
-                    icon="verified_user"
-                  >
-                    {{ v.estadoVerificacion }}
-                  </q-chip>
-
-                  <div class="text-caption text-grey-5">
-                    {{ formatearFecha(v.fechaRegistro) }}
-                  </div>
-                </div>
-              </q-card-section>
-
-              <q-separator dark />
-
-              <q-card-actions align="right">
-                <q-btn
-                  color="positive"
-                  icon="check"
-                  label="Aprobar"
-                  no-caps
-                  unelevated
-                  @click="aprobar(v)"
-                  :disable="v.estadoVerificacion === 'Verificado'"
-                />
-
-                <q-btn
-                  color="negative"
-                  icon="close"
-                  label="Rechazar"
-                  outline
-                  no-caps
-                  @click="rechazar(v)"
-                  :disable="v.estadoVerificacion === 'Rechazado'"
-                />
-              </q-card-actions>
-            </q-card>
-          </div>
-
-          <div v-if="listaFiltrada.length === 0" class="col-12">
-            <q-card class="panel">
-              <q-card-section class="text-center q-pa-xl">
-                <q-icon name="verified" color="grey" size="70px" />
-
-                <div class="text-grey-5 q-mt-md">No existen solicitudes pendientes.</div>
-              </q-card-section>
-            </q-card>
-          </div>
+            <div v-else class="text-grey-5">
+              Aún no hay operaciones suficientes para calcular uso.
+            </div>
+          </q-card>
         </div>
-      </q-card>
 
-      <!-- ACTIVIDAD -->
+        <div class="col-12 col-lg-5">
+          <q-card class="panel q-pa-md full-height">
+            <div class="text-white text-h6 q-mb-md">Accesos rápidos</div>
+            <div class="quick-grid">
+              <q-btn
+                outline
+                color="amber"
+                icon="people"
+                label="Usuarios"
+                @click="tab = 'usuarios'"
+              />
+              <q-btn
+                outline
+                color="amber"
+                icon="storefront"
+                label="Ofertas"
+                @click="tab = 'ofertas'"
+              />
+              <q-btn
+                outline
+                color="amber"
+                icon="assessment"
+                label="Reportes"
+                @click="tab = 'reportes'"
+              />
+              <q-btn
+                outline
+                color="amber"
+                icon="verified"
+                label="Verificaciones"
+                @click="tab = 'resumen'"
+              />
+            </div>
+          </q-card>
+        </div>
+      </div>
 
       <q-card class="panel q-mt-xl">
-        <q-card-section>
-          <div class="text-h6 text-white">Actividad reciente</div>
-        </q-card-section>
+        <q-tabs
+          v-model="tab"
+          dense
+          class="text-grey-5"
+          active-color="amber"
+          indicator-color="amber"
+          align="left"
+        >
+          <q-tab name="resumen" icon="dashboard" label="Resumen" />
+          <q-tab name="usuarios" icon="people" label="Usuarios" />
+          <q-tab name="ofertas" icon="storefront" label="Ofertas" />
+          <q-tab name="reportes" icon="assessment" label="Reportes" />
+        </q-tabs>
 
         <q-separator dark />
 
-        <q-list separator>
-          <q-item v-for="(item, index) in actividad" :key="index">
-            <q-item-section avatar>
-              <q-icon :name="item.icono" :color="item.color" />
-            </q-item-section>
+        <q-tab-panels v-model="tab" animated class="bg-transparent text-white">
+          <q-tab-panel name="resumen">
+            <div class="row items-center q-mb-md">
+              <div>
+                <div class="text-h6 text-white">Solicitudes de verificación</div>
+                <div class="text-grey-5 text-caption">
+                  Pendientes: {{ verificacionesPendientes }}
+                </div>
+              </div>
+              <q-space />
+              <q-input
+                v-model="buscarVerificacion"
+                outlined
+                dense
+                dark
+                color="amber"
+                placeholder="Buscar usuario..."
+                style="width: 280px"
+              >
+                <template v-slot:prepend><q-icon name="search" /></template>
+              </q-input>
+            </div>
 
-            <q-item-section>
-              <q-item-label class="text-white">
-                {{ item.texto }}
-              </q-item-label>
+            <div class="row q-col-gutter-lg">
+              <div
+                v-for="v in listaVerificacionesFiltrada"
+                :key="v.id"
+                class="col-12 col-md-6 col-lg-4"
+              >
+                <q-card class="inner-card q-pa-md">
+                  <div class="row items-center no-wrap">
+                    <q-avatar color="amber" text-color="black" size="48px">
+                      {{ obtenerInicial(v.nombreCompleto) }}
+                    </q-avatar>
+                    <div class="q-ml-md col">
+                      <div class="text-white text-weight-bold ellipsis">{{ v.nombreCompleto }}</div>
+                      <div class="text-grey-5 text-caption ellipsis">{{ v.correo }}</div>
+                    </div>
+                  </div>
 
-              <q-item-label caption>
-                {{ item.fecha }}
-              </q-item-label>
-            </q-item-section>
-          </q-item>
+                  <q-separator dark class="q-my-md" />
 
-          <div v-if="actividad.length === 0" class="text-center text-grey-5 q-pa-lg">
-            No hay actividad reciente.
-          </div>
-        </q-list>
+                  <div class="detail-row">
+                    <span>Documento:</span>
+                    <span>{{ v.tipoDocumento }} {{ v.documentoIdentidad }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span>Fecha:</span>
+                    <span>{{ formatearFecha(v.fechaRegistro) }}</span>
+                  </div>
+
+                  <div class="row items-center justify-between q-mt-md">
+                    <q-chip
+                      dense
+                      :color="colorEstado(v.estadoVerificacion)"
+                      text-color="white"
+                      icon="verified_user"
+                    >
+                      {{ v.estadoVerificacion }}
+                    </q-chip>
+
+                    <div class="row q-gutter-sm">
+                      <q-btn
+                        dense
+                        color="positive"
+                        icon="check"
+                        label="Aprobar"
+                        no-caps
+                        :disable="v.estadoVerificacion === 'Verificado'"
+                        @click="aprobar(v)"
+                      />
+                      <q-btn
+                        dense
+                        color="negative"
+                        icon="close"
+                        label="Rechazar"
+                        outline
+                        no-caps
+                        :disable="v.estadoVerificacion === 'Rechazado'"
+                        @click="rechazar(v)"
+                      />
+                    </div>
+                  </div>
+                </q-card>
+              </div>
+
+              <div v-if="listaVerificacionesFiltrada.length === 0" class="col-12">
+                <q-banner class="bg-blue-grey-10 text-grey-4 rounded-borders">
+                  No hay solicitudes que coincidan con la búsqueda.
+                </q-banner>
+              </div>
+            </div>
+
+            <q-separator dark class="q-my-lg" />
+
+            <div class="text-h6 text-white q-mb-md">Actividad reciente</div>
+            <q-list separator bordered class="activity-list">
+              <q-item v-for="(item, index) in actividad" :key="index">
+                <q-item-section avatar>
+                  <q-icon :name="item.icono" :color="item.color" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label class="text-white">{{ item.texto }}</q-item-label>
+                  <q-item-label caption>{{ item.fecha }}</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <div v-if="actividad.length === 0" class="text-center text-grey-5 q-pa-lg">
+                No hay actividad reciente.
+              </div>
+            </q-list>
+          </q-tab-panel>
+
+          <q-tab-panel name="usuarios">
+            <div class="row items-center q-mb-md">
+              <div>
+                <div class="text-h6 text-white">Usuarios</div>
+                <div class="text-grey-5 text-caption">Consulta de usuarios registrados</div>
+              </div>
+              <q-space />
+              <q-input
+                v-model="buscarUsuario"
+                outlined
+                dense
+                dark
+                color="amber"
+                placeholder="Buscar por nombre, correo o rol..."
+                style="width: 320px"
+              >
+                <template v-slot:prepend><q-icon name="search" /></template>
+              </q-input>
+            </div>
+
+            <div class="row q-col-gutter-md">
+              <div v-for="u in usuariosFiltrados" :key="u.id" class="col-12 col-md-6 col-lg-4">
+                <q-card class="inner-card q-pa-md">
+                  <div class="row items-center no-wrap">
+                    <q-avatar color="blue-grey-8" text-color="white" size="44px">
+                      {{ obtenerInicial(u.nombreCompleto) }}
+                    </q-avatar>
+                    <div class="q-ml-md col">
+                      <div class="text-white text-weight-bold ellipsis">{{ u.nombreCompleto }}</div>
+                      <div class="text-grey-5 text-caption ellipsis">{{ u.correo }}</div>
+                    </div>
+                  </div>
+                  <q-separator dark class="q-my-md" />
+                  <div class="detail-row">
+                    <span>Rol:</span><span>{{ u.rol }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span>Verificación:</span><span>{{ u.estadoVerificacion || '—' }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span>Reputación:</span><span>{{ u.reputacion ?? '—' }}</span>
+                  </div>
+                </q-card>
+              </div>
+
+              <div v-if="usuariosFiltrados.length === 0" class="col-12 text-grey-5">
+                No hay usuarios para mostrar.
+              </div>
+            </div>
+          </q-tab-panel>
+
+          <q-tab-panel name="ofertas">
+            <div class="row items-center q-mb-md">
+              <div>
+                <div class="text-h6 text-white">Ofertas</div>
+                <div class="text-grey-5 text-caption">Acceso de revisión a ofertas publicadas</div>
+              </div>
+              <q-space />
+              <q-input
+                v-model="buscarOferta"
+                outlined
+                dense
+                dark
+                color="amber"
+                placeholder="Buscar moneda, vendedor o estado..."
+                style="width: 320px"
+              >
+                <template v-slot:prepend><q-icon name="search" /></template>
+              </q-input>
+            </div>
+
+            <div class="row q-col-gutter-md">
+              <div v-for="oferta in ofertasFiltradas" :key="oferta.id" class="col-12 col-md-6">
+                <q-card class="inner-card q-pa-md">
+                  <div class="row items-start justify-between q-mb-sm">
+                    <div>
+                      <div class="text-white text-weight-bold">
+                        {{ oferta.monedaOrigenNombre }} → {{ oferta.monedaDestinoNombre }}
+                      </div>
+                      <div class="text-grey-5 text-caption">
+                        {{ oferta.nombreVendedor || `Usuario #${oferta.usuarioId}` }}
+                      </div>
+                    </div>
+                    <q-chip dense :color="colorOferta(oferta.estado)" text-color="white">
+                      {{ oferta.estado }}
+                    </q-chip>
+                  </div>
+
+                  <div class="detail-row">
+                    <span>Tasa:</span><span>{{ oferta.tasaCambio }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span>Rango:</span
+                    ><span>{{ oferta.montoMinimo }} - {{ oferta.montoMaximo }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span>Disponible:</span><span>{{ oferta.montoDisponible ?? '—' }}</span>
+                  </div>
+
+                  <div class="q-mt-sm q-gutter-xs">
+                    <q-badge
+                      v-for="metodo in oferta.metodosPago || []"
+                      :key="metodo.id || metodo.metodoPagoId"
+                      color="blue-grey-8"
+                    >
+                      {{ metodo.metodoPagoNombre || 'Método' }}
+                    </q-badge>
+                  </div>
+                </q-card>
+              </div>
+
+              <div v-if="ofertasFiltradas.length === 0" class="col-12 text-grey-5">
+                No hay ofertas para mostrar.
+              </div>
+            </div>
+          </q-tab-panel>
+
+          <q-tab-panel name="reportes">
+            <div class="row items-center q-mb-md">
+              <div>
+                <div class="text-h6 text-white">Reportes</div>
+                <div class="text-grey-5 text-caption">Historial de reportes administrativos</div>
+              </div>
+            </div>
+
+            <div class="row q-col-gutter-md">
+              <div v-for="r in reportes" :key="r.id" class="col-12 col-md-6 col-lg-4">
+                <q-card class="inner-card q-pa-md">
+                  <div class="text-white text-weight-bold">Reporte #{{ r.id }}</div>
+                  <div class="text-grey-5 text-caption q-mb-md">
+                    {{ formatearFecha(r.fechaGeneracion) }}
+                  </div>
+                  <div class="detail-row">
+                    <span>Usuarios:</span><span>{{ r.totalUsuarios }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span>Operaciones:</span><span>{{ r.totalOperaciones }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span>Disputas:</span><span>{{ r.totalDisputas }}</span>
+                  </div>
+                </q-card>
+              </div>
+
+              <div v-if="reportes.length === 0" class="col-12">
+                <q-banner class="bg-blue-grey-10 text-grey-4 rounded-borders">
+                  No existen reportes guardados todavía. El resumen superior se calcula en tiempo
+                  real.
+                </q-banner>
+              </div>
+            </div>
+          </q-tab-panel>
+        </q-tab-panels>
       </q-card>
     </template>
   </q-page>
@@ -245,36 +447,80 @@ import api from '@/services/api'
 const $q = useQuasar()
 
 const loading = ref(true)
+const tab = ref('resumen')
 
-const reporte = ref({
-  totalUsuarios: 0,
-  totalOperaciones: 0,
-  totalDisputas: 0,
-})
-
+const reporte = ref(crearReporteVacio())
 const verificaciones = ref([])
-
+const usuarios = ref([])
+const ofertas = ref([])
+const reportes = ref([])
 const actividad = ref([])
 
-const buscar = ref('')
+const buscarVerificacion = ref('')
+const buscarUsuario = ref('')
+const buscarOferta = ref('')
 
-const verificacionesPendientes = computed(() => {
-  return verificaciones.value.filter((x) => x.estadoVerificacion === 'Pendiente').length
+const verificacionesPendientes = computed(
+  () => verificaciones.value.filter((x) => x.estadoVerificacion === 'Pendiente').length,
+)
+
+const listaVerificacionesFiltrada = computed(() => {
+  const texto = buscarVerificacion.value.toLowerCase().trim()
+  if (!texto) return verificaciones.value
+
+  return verificaciones.value.filter((v) =>
+    [v.nombreCompleto, v.correo, v.documentoIdentidad, v.estadoVerificacion]
+      .join(' ')
+      .toLowerCase()
+      .includes(texto),
+  )
 })
 
-const listaFiltrada = computed(() => {
-  if (!buscar.value) return verificaciones.value
+const usuariosFiltrados = computed(() => {
+  const texto = buscarUsuario.value.toLowerCase().trim()
+  if (!texto) return usuarios.value
 
-  const texto = buscar.value.toLowerCase()
-
-  return verificaciones.value.filter((v) => {
-    return (
-      (v.nombreCompleto || '').toLowerCase().includes(texto) ||
-      (v.correo || '').toLowerCase().includes(texto) ||
-      (v.documentoIdentidad || '').includes(texto)
-    )
-  })
+  return usuarios.value.filter((u) =>
+    [u.nombreCompleto, u.correo, u.rol, u.estadoVerificacion]
+      .join(' ')
+      .toLowerCase()
+      .includes(texto),
+  )
 })
+
+const ofertasFiltradas = computed(() => {
+  const texto = buscarOferta.value.toLowerCase().trim()
+  if (!texto) return ofertas.value
+
+  return ofertas.value.filter((o) =>
+    [
+      o.nombreVendedor,
+      o.monedaOrigenNombre,
+      o.monedaDestinoNombre,
+      o.estado,
+      o.tipoOperacion,
+      ...(o.metodosPago || []).map((m) => m.metodoPagoNombre),
+    ]
+      .join(' ')
+      .toLowerCase()
+      .includes(texto),
+  )
+})
+
+function crearReporteVacio() {
+  return {
+    totalUsuarios: 0,
+    usuariosActivos: 0,
+    totalOperaciones: 0,
+    operacionesCompletadas: 0,
+    totalDisputas: 0,
+    verificacionesPendientes: 0,
+    ofertasActivas: 0,
+    volumenIntercambio: 0,
+    monedaMasUsada: '—',
+    monedasMasUsadas: [],
+  }
+}
 
 function obtenerInicial(nombre) {
   if (!nombre) return '?'
@@ -282,96 +528,93 @@ function obtenerInicial(nombre) {
 }
 
 function formatearFecha(fecha) {
-  if (!fecha) return ''
+  if (!fecha) return '—'
 
   return new Date(fecha).toLocaleDateString('es-PE', {
     day: '2-digit',
-
     month: 'short',
-
     year: 'numeric',
   })
+}
+
+function formatearMonto(valor) {
+  const numero = Number(valor || 0)
+  return new Intl.NumberFormat('es-PE', {
+    minimumFractionDigits: numero % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(numero)
 }
 
 function colorEstado(estado) {
   switch (estado) {
     case 'Pendiente':
       return 'orange'
-
     case 'Verificado':
       return 'green'
-
     case 'Rechazado':
       return 'red'
+    default:
+      return 'grey'
+  }
+}
 
+function colorOferta(estado) {
+  switch (estado) {
+    case 'Activa':
+      return 'green'
+    case 'Reservada':
+      return 'orange'
+    case 'Cerrada':
+      return 'blue-grey-8'
     default:
       return 'grey'
   }
 }
 
 async function cargarReporte() {
-  try {
-    const res = await api.get('/reporteadministrativo/dashboard')
-
-    console.log(res.data)
-
-    reporte.value = res.data
-  } catch (err) {
-    console.error('ERROR DASHBOARD')
-    console.error(err)
+  const res = await api.get('/reporteadministrativo/dashboard')
+  reporte.value = {
+    ...crearReporteVacio(),
+    ...res.data,
+    monedasMasUsadas: Array.isArray(res.data?.monedasMasUsadas) ? res.data.monedasMasUsadas : [],
   }
 }
 
 async function cargarVerificaciones() {
-  try {
-    const res = await api.get('/verificacionidentidad')
+  const res = await api.get('/verificacionidentidad')
+  verificaciones.value = Array.isArray(res.data) ? res.data : []
+}
 
-    verificaciones.value = res.data
-  } catch (err) {
-    console.error(err)
+async function cargarUsuarios() {
+  const res = await api.get('/usuario')
+  usuarios.value = Array.isArray(res.data) ? res.data : []
+}
 
-    $q.notify({
-      color: 'negative',
-      message: 'No se pudieron cargar las verificaciones.',
-    })
-  }
+async function cargarOfertas() {
+  const res = await api.get('/oferta')
+  ofertas.value = Array.isArray(res.data) ? res.data : []
+}
+
+async function cargarReportes() {
+  const res = await api.get('/reporteadministrativo')
+  reportes.value = Array.isArray(res.data) ? res.data : []
 }
 
 async function aprobar(verificacion) {
   $q.dialog({
     title: 'Confirmar',
-
     message: `¿Desea aprobar a ${verificacion.nombreCompleto}?`,
-
     cancel: true,
-
     persistent: true,
-
-    ok: {
-      label: 'Aprobar',
-      color: 'positive',
-    },
+    ok: { label: 'Aprobar', color: 'positive' },
   }).onOk(async () => {
-    console.log('Entró a aprobar')
     try {
       await api.put(`/verificacionidentidad/aprobar/${verificacion.id}`)
-      console.log(verificacion)
-      console.log(verificacion.id)
-      $q.notify({
-        type: 'positive',
-
-        message: 'Usuario aprobado correctamente.',
-      })
-
+      $q.notify({ type: 'positive', message: 'Usuario aprobado correctamente.' })
       await cargarTodo()
     } catch (error) {
       console.error(error)
-
-      $q.notify({
-        type: 'negative',
-
-        message: 'No fue posible aprobar.',
-      })
+      $q.notify({ type: 'negative', message: 'No fue posible aprobar.' })
     }
   })
 }
@@ -379,42 +622,24 @@ async function aprobar(verificacion) {
 async function rechazar(verificacion) {
   $q.dialog({
     title: 'Confirmar',
-
     message: `¿Desea rechazar la verificación de ${verificacion.nombreCompleto}?`,
-
     cancel: true,
-
     persistent: true,
-
-    ok: {
-      label: 'Rechazar',
-      color: 'negative',
-    },
+    ok: { label: 'Rechazar', color: 'negative' },
   }).onOk(async () => {
     try {
       await api.put(`/verificacionidentidad/rechazar/${verificacion.id}`)
-
-      $q.notify({
-        type: 'warning',
-
-        message: 'Solicitud rechazada.',
-      })
-
+      $q.notify({ type: 'warning', message: 'Solicitud rechazada.' })
       await cargarTodo()
     } catch (error) {
       console.error(error)
-
-      $q.notify({
-        type: 'negative',
-
-        message: 'No fue posible rechazar.',
-      })
+      $q.notify({ type: 'negative', message: 'No fue posible rechazar.' })
     }
   })
 }
 
-async function cargarActividad() {
-  actividad.value = verificaciones.value
+function cargarActividad() {
+  actividad.value = [...verificaciones.value]
     .sort((a, b) => new Date(b.fechaRegistro) - new Date(a.fechaRegistro))
     .slice(0, 5)
     .map((v) => ({
@@ -424,21 +649,18 @@ async function cargarActividad() {
           : v.estadoVerificacion === 'Verificado'
             ? 'verified'
             : 'cancel',
-
       color:
         v.estadoVerificacion === 'Pendiente'
           ? 'orange'
           : v.estadoVerificacion === 'Verificado'
             ? 'green'
             : 'red',
-
       texto:
         v.estadoVerificacion === 'Pendiente'
           ? `${v.nombreCompleto} envió su verificación.`
           : v.estadoVerificacion === 'Verificado'
             ? `${v.nombreCompleto} fue verificado.`
             : `${v.nombreCompleto} fue rechazado.`,
-
       fecha: formatearFecha(v.fechaRegistro),
     }))
 }
@@ -446,16 +668,28 @@ async function cargarActividad() {
 async function cargarTodo() {
   loading.value = true
 
-  await Promise.all([cargarReporte(), cargarVerificaciones()])
+  const resultados = await Promise.allSettled([
+    cargarReporte(),
+    cargarVerificaciones(),
+    cargarUsuarios(),
+    cargarOfertas(),
+    cargarReportes(),
+  ])
+
+  const fallo = resultados.some((resultado) => resultado.status === 'rejected')
+
+  if (fallo) {
+    $q.notify({
+      type: 'warning',
+      message: 'Algunos datos del dashboard no pudieron cargarse. Revisa permisos o conexión.',
+    })
+  }
 
   cargarActividad()
-
   loading.value = false
 }
 
-onMounted(() => {
-  cargarTodo()
-})
+onMounted(cargarTodo)
 </script>
 
 <style scoped>
@@ -464,113 +698,82 @@ onMounted(() => {
   min-height: 100vh;
 }
 
-.panel {
+.panel,
+.inner-card {
   background: #161b22;
   border: 1px solid #30363d;
   border-radius: 14px;
-  transition: all 0.25s ease;
 }
 
-.panel:hover {
-  border-color: #f2c037;
+.inner-card {
+  background: #0d1117;
+}
+
+.stat-card,
+.inner-card,
+.currency-row {
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.stat-card:hover,
+.inner-card:hover,
+.currency-row:hover {
   transform: translateY(-2px);
-}
-
-.stat-card {
-  cursor: default;
+  border-color: #f2c037;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
 }
 
 .text-grey-5 {
   color: #8b949e !important;
 }
 
-.q-item {
-  transition: all 0.2s ease;
+.currency-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  background: #0d1117;
 }
 
-.q-item:hover {
-  background: rgba(242, 192, 55, 0.05);
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
-.q-avatar {
-  font-weight: bold;
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: #8b949e;
+  padding: 3px 0;
 }
 
-.q-chip {
-  font-weight: bold;
+.detail-row span:last-child {
+  color: #f0f6fc;
+  text-align: right;
+  font-weight: 700;
+}
+
+.activity-list {
+  border-color: #30363d;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .q-btn {
   border-radius: 10px;
 }
 
-.q-card-section {
-  padding: 20px;
-}
-
-.q-list {
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-/* Scroll bonito */
-
-.q-list::-webkit-scrollbar {
-  width: 7px;
-}
-
-.q-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.q-list::-webkit-scrollbar-thumb {
-  background: #3b434d;
-  border-radius: 20px;
-}
-
-.q-list::-webkit-scrollbar-thumb:hover {
-  background: #5b6572;
-}
-
-.actividad-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #1f2937;
-}
-
-.estado-pendiente {
-  background: #d97706;
-}
-
-.estado-verificado {
-  background: #15803d;
-}
-
-.estado-rechazado {
-  background: #b91c1c;
-}
-
-.usuario-card {
-  transition: 0.25s;
-
-  cursor: pointer;
-}
-
-.usuario-card:hover {
-  transform: translateY(-6px);
-
-  border: 1px solid #f2c037;
-
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
-}
-
-@media (max-width: 900px) {
-  .q-list {
-    max-height: none;
+@media (max-width: 700px) {
+  .quick-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
