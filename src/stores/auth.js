@@ -10,15 +10,18 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     estaLogueado: (state) => !!state.token,
     esAdmin: (state) => state.usuario?.rol === 'Administrador',
+    esUsuarioOperativo: (state) => state.usuario?.rol !== 'Administrador',
     estaVerificado: (state) => state.usuario?.estadoVerificacion === 'Verificado',
+
+    // Importante: un administrador gestiona la plataforma, pero NO actúa como comprador/vendedor.
+    // Por eso no puede publicar ofertas, iniciar operaciones ni calificar como usuario normal.
     puedeOperar: (state) =>
-      state.usuario?.rol === 'Administrador' || state.usuario?.estadoVerificacion === 'Verificado',
+      state.usuario?.rol !== 'Administrador' && state.usuario?.estadoVerificacion === 'Verificado',
   },
 
   actions: {
     async login(correo, password) {
       const res = await api.post('/usuario/login', { correo, password })
-      // Guarda token y usuario
       this.token = res.data.token
       this.usuario = res.data.usuario
       localStorage.setItem('token', res.data.token)
@@ -26,9 +29,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async registrar(datos) {
-      // datos = { nombreCompleto, correo, password, telefono }
       await api.post('/usuario/registrar', datos)
-      // Después de registrar, inicia sesión automáticamente
       await this.login(datos.correo, datos.password)
     },
 
