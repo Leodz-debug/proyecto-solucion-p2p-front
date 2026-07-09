@@ -56,19 +56,18 @@
             </div>
           </div>
 
-          <div class="row justify-between items-center q-mb-xs">
-  <div class="text-grey-5">
-    Tasa de cambio
-  </div>
+          <div class="row justify-between items-center q-mb-xs q-mt-md">
+            <div class="text-grey-5">Tasa de cambio</div>
 
-  <div
-    v-if="monedaOrigen && monedaDestino && tasaMercado"
-    class="text-caption text-green"
-  >
-    Tasa actual del mercado:
-    <strong>{{ tasaMercado.toFixed(4) }}</strong>
-  </div>
-</div>
+            <div
+              v-if="monedaOrigen && monedaDestino && tasaMercado"
+              class="text-caption text-green"
+            >
+              Tasa actual del mercado:
+              <strong>{{ tasaMercado.toFixed(4) }}</strong>
+            </div>
+          </div>
+
           <q-input
             v-model.number="tasaCambio"
             type="number"
@@ -118,11 +117,13 @@
           <q-separator dark class="q-my-lg" />
 
           <div class="text-white text-subtitle2 text-weight-bold q-mb-xs">
-            Métodos de pago que aceptas
+            Formas en las que recibirás el pago
           </div>
 
           <div class="text-grey-5 text-caption q-mb-sm">
-            El comprador solo podrá iniciar la operación usando uno de estos métodos.
+            El comprador solo podrá iniciar la operación usando uno de estos métodos. Puedes
+            rellenar los datos desde tus métodos guardados o escribirlos manualmente para esta
+            oferta.
           </div>
 
           <q-select
@@ -148,26 +149,77 @@
             class="payment-method-card q-pa-md q-mt-md"
           >
             <div class="row items-center q-mb-sm">
-              <q-icon name="payments" color="amber" size="22px" class="q-mr-sm" />
+              <q-avatar color="amber" text-color="black" size="38px" class="q-mr-sm">
+                <q-icon :name="iconoMetodo(metodoOferta.metodoPagoNombre)" />
+              </q-avatar>
 
-              <div>
+              <div class="col">
                 <div class="text-white text-weight-bold">
                   {{ metodoOferta.metodoPagoNombre }}
                 </div>
 
                 <div class="text-grey-5 text-caption">
-                  Datos que verá el comprador cuando inicie trato.
+                  Datos que verá el comprador cuando inicie el trato.
                 </div>
               </div>
+
+              <q-badge
+                v-if="metodoOferta.metodoGuardado"
+                color="green-8"
+                text-color="white"
+                class="q-pa-xs"
+              >
+                Rellenado desde guardado
+              </q-badge>
             </div>
 
-            <div class="text-grey-5 text-caption q-mb-xs">Alias</div>
+            <div class="text-grey-5 text-caption q-mb-xs">Usar un método guardado de este tipo</div>
+
+            <q-select
+              v-model="metodoOferta.metodoGuardado"
+              :options="metodosGuardadosCompatibles(metodoOferta.metodoPagoId)"
+              option-label="alias"
+              clearable
+              dark
+              outlined
+              color="amber"
+              popup-content-class="bg-dark text-white"
+              :disable="metodosGuardadosCompatibles(metodoOferta.metodoPagoId).length === 0"
+              @update:model-value="aplicarMetodoGuardado(metodoOferta)"
+            >
+              <template #selected-item="scope">
+                <q-chip dense color="blue-grey-8" text-color="white">
+                  {{ scope.opt.alias || scope.opt.metodoPagoNombre }}
+                </q-chip>
+              </template>
+
+              <template #option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section avatar>
+                    <q-icon :name="iconoMetodo(scope.opt.metodoPagoNombre)" color="amber" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>{{ scope.opt.alias || scope.opt.metodoPagoNombre }}</q-item-label>
+                    <q-item-label caption>{{ scope.opt.resumenPublico }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+
+            <div
+              v-if="metodosGuardadosCompatibles(metodoOferta.metodoPagoId).length === 0"
+              class="text-grey-6 text-caption q-mt-xs"
+            >
+              No tienes métodos guardados de este tipo. Puedes escribir los datos manualmente.
+            </div>
+
+            <div class="text-grey-5 text-caption q-mb-xs q-mt-md">Alias que verá el comprador</div>
             <q-input
               v-model.trim="metodoOferta.alias"
               dark
               outlined
               color="amber"
-              placeholder="Ejemplo: Mi Yape principal, BCP soles, PayPal personal"
+              placeholder="Ejemplo: Yape Juliet, BCP soles, PayPal personal"
             />
 
             <div class="text-grey-5 text-caption q-mb-xs q-mt-md">
@@ -195,13 +247,13 @@
               color="amber"
               maxlength="500"
               counter
-              placeholder="Ejemplo: Yapea exactamente el monto de la operación y coloca el código del trato en la descripción."
+              :placeholder="instruccionesSugeridas(metodoOferta.metodoPagoNombre)"
             />
           </div>
 
           <q-banner dense class="bg-blue-grey-10 text-grey-4 q-mt-md rounded-borders">
-            En el marketplace solo se verán los métodos como etiquetas. Tus datos completos se
-            mostrarán cuando un comprador inicie una operación.
+            En el marketplace solo se verán etiquetas como Yape o Plin. Tus datos completos se
+            mostrarán recién cuando un comprador inicie una operación contigo.
           </q-banner>
 
           <q-banner
@@ -232,14 +284,26 @@
             <span class="text-white text-weight-bold">Importante</span>
           </div>
 
-          <div class="text-grey-4 q-mb-sm">• Tu oferta será visible para otros usuarios.</div>
           <div class="text-grey-4 q-mb-sm">
-            • Solo podrán comprar usando los métodos que aceptaste.
+            • Cuando vendes, tú defines dónde recibirás el dinero.
+          </div>
+          <div class="text-grey-4 q-mb-sm">
+            • Cuando compras, no registras método de pago: pagas al vendedor por fuera y subes
+            voucher.
+          </div>
+          <div class="text-grey-4 q-mb-sm">
+            • Yape/Plin aquí son manuales. No hay confirmación automática como una pasarela
+            empresarial.
           </div>
           <div class="text-grey-4 q-mb-sm">• No guardes CVV ni número completo de tarjeta.</div>
-          <div class="text-grey-4">
-            • El comprador subirá comprobante después de pagar por fuera de la plataforma.
-          </div>
+          <q-btn
+            outline
+            color="amber"
+            icon="settings"
+            label="Gestionar métodos guardados"
+            class="full-width q-mt-md"
+            @click="$router.push('/metodos-pago')"
+          />
         </q-card>
       </div>
     </div>
@@ -251,19 +315,22 @@ import { ref, watch, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
+import {
+  crearResumenPublico,
+  datoRecepcionDesdeDatos,
+  etiquetaDatoRecepcion,
+  iconoMetodo,
+  instruccionesSugeridas,
+  placeholderDatoRecepcion,
+} from '@/utils/paymentMethods'
 
 const router = useRouter()
 const auth = useAuthStore()
 
 const monedas = ref([])
 
-const monedasOrigen = computed(() => {
-  return monedas.value.filter((m) => m.id !== monedaDestino.value)
-})
-
-const monedasDestino = computed(() => {
-  return monedas.value.filter((m) => m.id !== monedaOrigen.value)
-})
+const monedasOrigen = computed(() => monedas.value.filter((m) => m.id !== monedaDestino.value))
+const monedasDestino = computed(() => monedas.value.filter((m) => m.id !== monedaOrigen.value))
 
 const monedaOrigen = ref(null)
 const monedaDestino = ref(null)
@@ -274,6 +341,7 @@ const montoMaximo = ref(null)
 const montoDisponible = ref(null)
 
 const metodosPago = ref([])
+const metodosGuardados = ref([])
 const metodoPagoIds = ref([])
 const metodosOferta = ref([])
 const cargandoMetodos = ref(false)
@@ -296,10 +364,18 @@ async function cargarMetodosPago() {
   cargandoMetodos.value = true
 
   try {
-    const res = await api.get('/metodopago')
-    metodosPago.value = res.data.filter((m) => m.activo !== false)
+    const [resCatalogo, resGuardados] = await Promise.all([
+      api.get('/metodopago'),
+      api.get('/usuariometodopago/mis-metodos'),
+    ])
+
+    metodosPago.value = Array.isArray(resCatalogo.data)
+      ? resCatalogo.data.filter((m) => m.activo !== false)
+      : []
+
+    metodosGuardados.value = Array.isArray(resGuardados.data) ? resGuardados.data : []
   } catch {
-    mensaje.value = 'No se pudieron cargar los métodos de pago.'
+    mensaje.value = 'No se pudieron cargar los métodos de recepción.'
     exito.value = false
   } finally {
     cargandoMetodos.value = false
@@ -321,97 +397,95 @@ async function actualizarTasaCambio() {
   if (!origen || !destino) return
 
   try {
-  const res = await fetch(
-    `https://open.er-api.com/v6/latest/${origen.codigo}`
-  )
+    const res = await fetch(`https://open.er-api.com/v6/latest/${origen.codigo}`)
+    const data = await res.json()
 
-  const data = await res.json()
-
-  if (data.result === 'success') {
-    tasaMercado.value = Number(data.rates[destino.codigo].toFixed(4))
-    tasaCambio.value = tasaMercado.value
+    if (data.result === 'success' && data.rates?.[destino.codigo]) {
+      tasaMercado.value = Number(data.rates[destino.codigo].toFixed(4))
+      tasaCambio.value = tasaMercado.value
+    }
+  } catch (error) {
+    console.error('Error obteniendo tasa:', error)
   }
-} catch (error) {
-  console.error('Error obteniendo tasa:', error)
-}
 }
 
-function sincronizarMetodosOferta(idsSeleccionados) {
+function sincronizarMetodosOferta(idsSeleccionados = []) {
   const anteriores = [...metodosOferta.value]
 
   metodosOferta.value = idsSeleccionados.map((id) => {
     const existente = anteriores.find((m) => m.metodoPagoId === id)
-
     if (existente) return existente
 
     const metodo = metodosPago.value.find((m) => m.id === id)
+    const nombre = metodo?.nombre || 'Método de pago'
+    const compatibles = metodosGuardadosCompatibles(id)
+    const guardado = compatibles[0] || null
 
-    return {
+    const nuevo = {
       metodoPagoId: id,
-      metodoPagoNombre: metodo?.nombre || 'Método de pago',
-      alias: metodo?.nombre || '',
+      metodoPagoNombre: nombre,
+      metodoGuardado: guardado,
+      alias: nombre,
       datosRecepcion: '',
-      instrucciones: '',
+      instrucciones: instruccionesSugeridas(nombre),
+      resumenPublico: '',
     }
+
+    if (guardado) aplicarMetodoGuardado(nuevo)
+
+    return nuevo
   })
 }
 
-function normalizarTexto(valor) {
-  return String(valor || '').toLowerCase()
+function metodosGuardadosCompatibles(metodoPagoId) {
+  return metodosGuardados.value.filter(
+    (metodo) => metodo.activo !== false && Number(metodo.metodoPagoId) === Number(metodoPagoId),
+  )
 }
 
-function etiquetaDatoRecepcion(nombreMetodo) {
-  const nombre = normalizarTexto(nombreMetodo)
+function obtenerDatosGuardados(metodoGuardado) {
+  const datos = metodoGuardado?.datosPago
 
-  if (nombre.includes('yape') || nombre.includes('plin')) {
-    return 'Número celular donde recibirás el pago'
+  if (!datos) return {}
+  if (typeof datos === 'object') return datos
+
+  try {
+    return JSON.parse(datos)
+  } catch {
+    return {}
   }
-
-  if (nombre.includes('transferencia') || nombre.includes('banco')) {
-    return 'Cuenta bancaria o CCI donde recibirás el pago'
-  }
-
-  if (nombre.includes('paypal')) {
-    return 'Correo PayPal donde recibirás el pago'
-  }
-
-  if (nombre.includes('tarjeta')) {
-    return 'Referencia de tarjeta o últimos 4 dígitos'
-  }
-
-  return 'Datos para recibir el pago'
 }
 
-function placeholderDatoRecepcion(nombreMetodo) {
-  const nombre = normalizarTexto(nombreMetodo)
+function aplicarMetodoGuardado(metodoOferta) {
+  const guardado = metodoOferta.metodoGuardado
 
-  if (nombre.includes('yape') || nombre.includes('plin')) {
-    return 'Ejemplo: 987654321'
+  if (!guardado) {
+    metodoOferta.resumenPublico = crearResumenPublico(
+      metodoOferta.metodoPagoNombre,
+      { referencia: metodoOferta.datosRecepcion },
+      metodoOferta.alias,
+    )
+    return
   }
 
-  if (nombre.includes('transferencia') || nombre.includes('banco')) {
-    return 'Ejemplo: BCP 191-00000000-0-00 / CCI 002...'
-  }
+  const datos = obtenerDatosGuardados(guardado)
 
-  if (nombre.includes('paypal')) {
-    return 'Ejemplo: correo@paypal.com'
-  }
-
-  if (nombre.includes('tarjeta')) {
-    return 'Ejemplo: Visa terminada en 1234'
-  }
-
-  return 'Escribe tus datos de recepción'
+  metodoOferta.alias = guardado.alias || metodoOferta.metodoPagoNombre
+  metodoOferta.datosRecepcion = datoRecepcionDesdeDatos(metodoOferta.metodoPagoNombre, datos)
+  metodoOferta.instrucciones ||= instruccionesSugeridas(metodoOferta.metodoPagoNombre)
+  metodoOferta.resumenPublico =
+    guardado.resumenPublico ||
+    crearResumenPublico(metodoOferta.metodoPagoNombre, datos, metodoOferta.alias)
 }
 
-function crearResumenPublico(metodoOferta) {
-  const dato = metodoOferta.datosRecepcion || ''
+function crearResumenMetodoOferta(metodoOferta) {
+  if (metodoOferta.resumenPublico && metodoOferta.metodoGuardado) return metodoOferta.resumenPublico
 
-  if (dato.length <= 4) {
-    return `${metodoOferta.metodoPagoNombre}: ${dato}`
-  }
-
-  return `${metodoOferta.metodoPagoNombre}: ****${dato.slice(-4)}`
+  return crearResumenPublico(
+    metodoOferta.metodoPagoNombre,
+    { referencia: metodoOferta.datosRecepcion },
+    metodoOferta.alias,
+  )
 }
 
 function validarFormulario() {
@@ -444,7 +518,7 @@ function validarFormulario() {
   }
 
   if (metodosOferta.value.length === 0) {
-    return 'Selecciona al menos un método de pago.'
+    return 'Selecciona al menos una forma de recepción de dinero.'
   }
 
   const incompleto = metodosOferta.value.find(
@@ -485,16 +559,14 @@ async function publicar() {
       montoDisponible: montoDisponible.value,
       estado: 'Activa',
       fechaCreacion: new Date().toISOString(),
-
       metodoPagoIds: metodoPagoIds.value,
-
       metodosPago: metodosOferta.value.map((m) => ({
         metodoPagoId: m.metodoPagoId,
         metodoPagoNombre: m.metodoPagoNombre,
         alias: m.alias,
         datosRecepcion: m.datosRecepcion,
         instrucciones: m.instrucciones,
-        resumenPublico: crearResumenPublico(m),
+        resumenPublico: crearResumenMetodoOferta(m),
       })),
     })
 

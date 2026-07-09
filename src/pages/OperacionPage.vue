@@ -103,95 +103,125 @@
               :placeholder="String(ofertaSeleccionada.montoMinimo)"
             />
 
-            <div class="text-grey-5 text-caption q-mb-xs q-mt-md">
-              Método de pago para esta operación
-            </div>
+            <q-card flat bordered class="step-card q-pa-md q-mt-md">
+              <div class="row items-center q-mb-sm">
+                <q-avatar color="amber" text-color="black" size="34px" class="q-mr-sm">1</q-avatar>
+                <div>
+                  <div class="text-white text-subtitle2 text-weight-bold">
+                    Elige cómo pagarás al vendedor
+                  </div>
+                  <div class="text-grey-5 text-caption">
+                    Selecciona uno de los métodos aceptados por esta oferta.
+                  </div>
+                </div>
+              </div>
 
-            <q-select
-              v-model="metodoOfertaSeleccionado"
-              :options="opcionesMetodosOferta"
-              option-label="label"
-              dark
-              outlined
-              color="amber"
-              popup-content-class="bg-dark text-white"
-              @update:model-value="prepararDatosComprador"
-            />
+              <div v-if="opcionesMetodosOferta.length" class="row q-col-gutter-sm">
+                <div
+                  v-for="opcion in opcionesMetodosOferta"
+                  :key="opcion.key"
+                  class="col-12 col-sm-6"
+                >
+                  <q-card
+                    flat
+                    bordered
+                    class="payment-choice q-pa-md cursor-pointer"
+                    :class="{
+                      'payment-choice--active': metodoOfertaSeleccionado?.key === opcion.key,
+                    }"
+                    @click="seleccionarMetodoOferta(opcion)"
+                  >
+                    <div class="row items-start no-wrap">
+                      <q-avatar color="amber" text-color="black" size="38px" class="q-mr-md">
+                        <q-icon :name="iconoMetodo(opcion.label)" />
+                      </q-avatar>
 
-            <q-banner
+                      <div class="col">
+                        <div class="text-white text-weight-bold">{{ opcion.label }}</div>
+                        <div class="text-grey-5 text-caption">
+                          {{ descripcionMetodo(opcion.label) }}
+                        </div>
+                      </div>
+
+                      <q-icon
+                        v-if="metodoOfertaSeleccionado?.key === opcion.key"
+                        name="check_circle"
+                        color="positive"
+                        size="22px"
+                      />
+                    </div>
+                  </q-card>
+                </div>
+              </div>
+
+              <q-banner v-else dense class="bg-red-9 text-white q-mt-md rounded-borders">
+                Esta oferta no tiene métodos de pago publicados.
+              </q-banner>
+            </q-card>
+
+            <q-card
               v-if="metodoOfertaSeleccionado"
-              dense
-              class="bg-blue-grey-10 text-grey-4 q-mt-md rounded-borders"
+              flat
+              bordered
+              class="seller-payment-card q-pa-md q-mt-md"
             >
-              Elegiste pagar por <b>{{ metodoOfertaSeleccionado.label }}</b
-              >. Los datos completos del vendedor aparecerán cuando se cree la operación.
-            </q-banner>
-
-            <template v-if="metodoOfertaSeleccionado">
-              <q-separator dark class="q-my-md" />
-
-              <div class="text-white text-subtitle2 text-weight-bold q-mb-xs">
-                Tus datos de pago
+              <div class="row items-center q-mb-sm">
+                <q-icon name="storefront" color="amber" size="22px" class="q-mr-sm" />
+                <div class="text-white text-subtitle2 text-weight-bold">Datos del vendedor</div>
               </div>
 
               <div class="text-grey-5 text-caption q-mb-sm">
-                Puedes ingresar tus datos solo para esta operación. Si marcas guardar, el backend
-                los guardará para próximas operaciones.
+                Usa estos datos para realizar el pago fuera de la plataforma y luego sube tu
+                comprobante.
               </div>
 
-              <q-option-group
-                v-model="modoDatosComprador"
-                :options="opcionesModoDatos"
-                color="amber"
-                dark
-                @update:model-value="prepararDatosComprador"
-              />
+              <div class="detail-row">
+                <span>Método:</span>
+                <span>{{ metodoOfertaSeleccionado.label }}</span>
+              </div>
+              <div class="detail-row">
+                <span>Alias:</span>
+                <span>{{ metodoOfertaSeleccionado.metodo.alias || '—' }}</span>
+              </div>
+              <div class="detail-row">
+                <span>{{ etiquetaDatoRecepcion(metodoOfertaSeleccionado.label) }}:</span>
+                <span>{{ metodoOfertaSeleccionado.metodo.datosRecepcion || '—' }}</span>
+              </div>
 
-              <q-select
-                v-if="modoDatosComprador === 'guardado'"
-                v-model="metodoGuardadoSeleccionado"
-                :options="metodosGuardadosCompatibles"
-                option-label="alias"
-                dark
-                outlined
-                color="amber"
-                class="q-mt-md"
-                popup-content-class="bg-dark text-white"
-              />
+              <q-banner dense class="bg-blue-grey-10 text-grey-4 q-mt-md rounded-borders">
+                {{
+                  metodoOfertaSeleccionado.metodo.instrucciones ||
+                  'Realiza el pago exacto y conserva tu comprobante.'
+                }}
+              </q-banner>
+            </q-card>
 
-              <template v-else>
-                <div v-for="campo in camposComprador" :key="campo.key" class="q-mt-md">
-                  <div class="text-grey-5 text-caption q-mb-xs">{{ campo.label }}</div>
-
-                  <q-input
-                    v-model.trim="datosComprador[campo.key]"
-                    :type="campo.type || 'text'"
-                    dark
-                    outlined
-                    color="amber"
-                    :maxlength="campo.maxlength"
-                    :placeholder="campo.placeholder"
-                  />
+            <q-card v-if="metodoOfertaSeleccionado" flat bordered class="step-card q-pa-md q-mt-md">
+              <div class="row items-center q-mb-sm">
+                <q-avatar color="amber" text-color="black" size="34px" class="q-mr-sm">2</q-avatar>
+                <div>
+                  <div class="text-white text-subtitle2 text-weight-bold">
+                    Confirma e inicia la operación
+                  </div>
+                  <div class="text-grey-5 text-caption">
+                    Al iniciar se reserva la oferta y se abre el temporizador. Luego pagas fuera de
+                    la plataforma y subes el voucher.
+                  </div>
                 </div>
+              </div>
 
-                <q-checkbox
-                  v-model="guardarMetodoComprador"
-                  dark
-                  color="amber"
-                  class="q-mt-sm"
-                  label="Guardar estos datos para próximas operaciones"
-                />
-
-                <q-banner
-                  v-if="esTarjetaSeleccionada"
-                  dense
-                  class="bg-orange-9 text-white q-mt-md rounded-borders"
-                >
-                  Para tarjeta no se debe guardar CVV ni número completo. Solo marca, titular y
-                  últimos 4 dígitos.
-                </q-banner>
-              </template>
-            </template>
+              <div class="manual-flow q-pa-md q-mt-md">
+                <div class="text-white text-weight-bold q-mb-sm">Flujo manual P2P</div>
+                <ol class="manual-flow-list q-ma-none q-pl-md text-grey-4">
+                  <li>Abre {{ metodoOfertaSeleccionado.label }} o tu app bancaria.</li>
+                  <li>Envía el monto exacto al dato del vendedor mostrado arriba.</li>
+                  <li>
+                    Coloca el código de operación como descripción o referencia cuando sea posible.
+                  </li>
+                  <li>Sube el comprobante para que el vendedor confirme la recepción.</li>
+                </ol>
+              </div>
+            </q-card>
 
             <q-banner
               v-if="mensaje"
@@ -203,7 +233,7 @@
             </q-banner>
 
             <q-btn
-              label="Confirmar operación"
+              label="Iniciar operación y ver instrucciones"
               color="amber"
               text-color="black"
               class="full-width text-weight-bold q-mt-lg"
@@ -309,6 +339,11 @@
                 <span>Comprador:</span>
                 <span>{{ nombreParticipante(op.compradorNombre, op.compradorId) }}</span>
               </div>
+
+              <div class="detail-row">
+                <span>Método:</span>
+                <span>{{ op.metodoPagoNombre || '—' }}</span>
+              </div>
             </div>
 
             <q-banner v-if="disputaDeOperacion(op)" dense rounded class="dispute-banner q-mt-md">
@@ -382,6 +417,12 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
+import {
+  descripcionMetodo,
+  etiquetaDatoRecepcion,
+  iconoMetodo,
+  normalizarTexto,
+} from '@/utils/paymentMethods'
 
 const route = useRoute()
 const router = useRouter()
@@ -391,7 +432,6 @@ const operaciones = ref([])
 const disputas = ref([])
 const comprobantesPorOperacion = ref({})
 const ofertaSeleccionada = ref(null)
-const metodosGuardados = ref([])
 
 const cargando = ref(true)
 const guardando = ref(false)
@@ -400,15 +440,6 @@ const ok = ref(false)
 
 const montoTrato = ref(null)
 const metodoOfertaSeleccionado = ref(null)
-const modoDatosComprador = ref('temporal')
-const metodoGuardadoSeleccionado = ref(null)
-const guardarMetodoComprador = ref(false)
-const datosComprador = ref({})
-
-const opcionesModoDatos = [
-  { label: 'Ingresar para esta operación', value: 'temporal' },
-  { label: 'Usar método guardado', value: 'guardado' },
-]
 
 const modoInicio = computed(() => !!route.query.oferta)
 
@@ -416,26 +447,10 @@ const metodosOferta = computed(() => obtenerMetodosOferta(ofertaSeleccionada.val
 
 const opcionesMetodosOferta = computed(() =>
   metodosOferta.value.map((metodo) => ({
+    key: `${metodo.id || 'm'}-${metodo.metodoPagoId || metodo.id || nombreMetodoOferta(metodo)}`,
     label: nombreMetodoOferta(metodo),
     metodo,
   })),
-)
-
-const metodoPagoIdSeleccionado = computed(() => {
-  const metodo = metodoOfertaSeleccionado.value?.metodo
-  return metodo?.metodoPagoId || metodo?.id || null
-})
-
-const metodosGuardadosCompatibles = computed(() =>
-  metodosGuardados.value.filter(
-    (m) => Number(m.metodoPagoId) === Number(metodoPagoIdSeleccionado.value),
-  ),
-)
-
-const camposComprador = computed(() => camposPorMetodo(metodoOfertaSeleccionado.value?.label))
-
-const esTarjetaSeleccionada = computed(() =>
-  normalizarTexto(metodoOfertaSeleccionado.value?.label).includes('tarjeta'),
 )
 
 async function cargarPantalla() {
@@ -458,8 +473,7 @@ async function cargarOfertaParaIniciar() {
     const res = await api.get(`/oferta/${ofertaId}`)
     ofertaSeleccionada.value = res.data
     montoTrato.value = res.data.montoMinimo
-
-    await cargarMetodosGuardados()
+    metodoOfertaSeleccionado.value = null
   } catch (error) {
     console.error('Error al cargar oferta:', error)
     ofertaSeleccionada.value = null
@@ -523,15 +537,6 @@ async function cargarComprobantesOperaciones(lista) {
   comprobantesPorOperacion.value = mapa
 }
 
-async function cargarMetodosGuardados() {
-  try {
-    const res = await api.get('/usuariometodopago/mis-metodos')
-    metodosGuardados.value = Array.isArray(res.data) ? res.data : []
-  } catch {
-    metodosGuardados.value = []
-  }
-}
-
 function obtenerMetodosOferta(oferta) {
   if (!oferta) return []
 
@@ -558,135 +563,19 @@ function nombreMetodoOferta(metodo) {
   )
 }
 
-function normalizarTexto(valor) {
-  return String(valor || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
+function seleccionarMetodoOferta(opcion) {
+  metodoOfertaSeleccionado.value = opcion
 }
 
-function camposPorMetodo(nombreMetodo) {
-  const nombre = normalizarTexto(nombreMetodo)
-
-  if (nombre.includes('yape') || nombre.includes('plin')) {
-    return [
-      {
-        key: 'titular',
-        label: 'Nombre del titular',
-        placeholder: 'Ejemplo: Ana Torres',
-      },
-      {
-        key: 'telefono',
-        label: 'Número celular asociado',
-        placeholder: 'Ejemplo: 987654321',
-        maxlength: 9,
-      },
-    ]
-  }
-
-  if (nombre.includes('transferencia') || nombre.includes('banco')) {
-    return [
-      {
-        key: 'titular',
-        label: 'Nombre del titular',
-        placeholder: 'Ejemplo: Ana Torres',
-      },
-      {
-        key: 'banco',
-        label: 'Banco',
-        placeholder: 'Ejemplo: BCP, Interbank, BBVA',
-      },
-      {
-        key: 'cuenta',
-        label: 'Cuenta o CCI de origen',
-        placeholder: 'Ejemplo: 191-xxxx o CCI 002...',
-      },
-    ]
-  }
-
-  if (nombre.includes('paypal')) {
-    return [
-      {
-        key: 'titular',
-        label: 'Nombre del titular',
-        placeholder: 'Ejemplo: Ana Torres',
-      },
-      {
-        key: 'correo',
-        label: 'Correo PayPal',
-        placeholder: 'Ejemplo: correo@dominio.com',
-        type: 'email',
-      },
-    ]
-  }
-
-  if (nombre.includes('tarjeta')) {
-    return [
-      {
-        key: 'titular',
-        label: 'Nombre del titular',
-        placeholder: 'Como aparece en la tarjeta',
-      },
-      {
-        key: 'marca',
-        label: 'Marca',
-        placeholder: 'Ejemplo: Visa, Mastercard',
-      },
-      {
-        key: 'ultimos4',
-        label: 'Últimos 4 dígitos',
-        placeholder: 'Ejemplo: 1234',
-        maxlength: 4,
-      },
-    ]
-  }
-
-  return [
-    {
-      key: 'titular',
-      label: 'Nombre del titular',
-      placeholder: 'Nombre asociado al método de pago',
-    },
-    {
-      key: 'referencia',
-      label: 'Referencia del método',
-      placeholder: 'Número, cuenta, correo o referencia',
-    },
-  ]
-}
-
-function prepararDatosComprador() {
-  metodoGuardadoSeleccionado.value = null
-  guardarMetodoComprador.value = false
-  datosComprador.value = {}
-
-  if (metodosGuardadosCompatibles.value.length === 0) {
-    modoDatosComprador.value = 'temporal'
-  }
-}
-
-function validarDatosComprador() {
+function validarSeleccionOperacion() {
   if (!metodoOfertaSeleccionado.value) {
-    return 'Selecciona un método de pago disponible para esta oferta.'
+    return 'Selecciona un método disponible para esta oferta.'
   }
 
-  if (modoDatosComprador.value === 'guardado') {
-    if (!metodoGuardadoSeleccionado.value) {
-      return 'Selecciona un método guardado o ingresa datos para esta operación.'
-    }
+  const metodo = metodoOfertaSeleccionado.value.metodo
 
-    return ''
-  }
-
-  const faltante = camposComprador.value.find((campo) => !datosComprador.value[campo.key])
-
-  if (faltante) {
-    return `Completa el campo: ${faltante.label}.`
-  }
-
-  if (esTarjetaSeleccionada.value && datosComprador.value.ultimos4?.length !== 4) {
-    return 'Para tarjeta, ingresa exactamente los últimos 4 dígitos.'
+  if (!metodo?.datosRecepcion) {
+    return 'El vendedor no completó los datos de recepción para este método.'
   }
 
   return ''
@@ -722,10 +611,10 @@ async function confirmarTrato() {
     return
   }
 
-  const errorDatos = validarDatosComprador()
+  const errorSeleccion = validarSeleccionOperacion()
 
-  if (errorDatos) {
-    mensaje.value = errorDatos
+  if (errorSeleccion) {
+    mensaje.value = errorSeleccion
     return
   }
 
@@ -734,24 +623,20 @@ async function confirmarTrato() {
   guardando.value = true
 
   try {
-    await api.post('/operacion/iniciar-trato', {
+    const res = await api.post('/operacion/iniciar-trato', {
       ofertaId: oferta.id,
       monto: montoTrato.value,
       ofertaMetodoPagoId: metodoOferta.id || null,
       metodoPagoId: metodoOferta.metodoPagoId || metodoOferta.id,
-      usuarioMetodoPagoId:
-        modoDatosComprador.value === 'guardado' ? metodoGuardadoSeleccionado.value?.id : null,
-      guardarMetodoComprador:
-        modoDatosComprador.value === 'temporal' ? guardarMetodoComprador.value : false,
-      datosPagoComprador: modoDatosComprador.value === 'temporal' ? datosComprador.value : null,
     })
 
     ok.value = true
     mensaje.value = 'Operación iniciada correctamente.'
 
+    const operacionId = res.data?.id
     setTimeout(() => {
-      router.push('/operacion')
-    }, 900)
+      router.push(operacionId ? '/operacion/' + operacionId : '/operacion')
+    }, 700)
   } catch (e) {
     ok.value = false
     mensaje.value = e.response?.data?.mensaje || 'No se pudo iniciar el trato.'
@@ -1160,6 +1045,52 @@ onMounted(cargarPantalla)
 .action-btn {
   width: 100%;
   font-weight: 700;
+}
+
+.step-card,
+.seller-payment-card,
+.payment-choice,
+.payment-mode,
+.saved-method-card {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+}
+
+.payment-choice,
+.payment-mode,
+.saved-method-card {
+  transition:
+    border 0.18s ease,
+    transform 0.18s ease,
+    background 0.18s ease;
+}
+
+.payment-choice:hover,
+.payment-mode:hover,
+.saved-method-card:hover {
+  transform: translateY(-2px);
+  border-color: #f2c037;
+}
+
+.payment-choice--active,
+.payment-mode--active,
+.saved-method-card--active {
+  border-color: #f2c037;
+  background: rgba(242, 192, 55, 0.08);
+}
+
+.payment-mode--disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.save-payment-checkbox :deep(.q-checkbox__label) {
+  color: #dce9ef;
+}
+
+.save-payment-checkbox :deep(.q-checkbox__inner) {
+  color: #dce9ef;
 }
 
 @media (max-width: 700px) {
